@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 def show_intro():
     print("""
     ****************************************
-    *        Welcome to ExaliSweep!        *
+    *        Welcome to ExcaliSweep!        *
     *   Your AWS Cleanup Wizard Assistant  *
     ****************************************
     """)
@@ -65,8 +65,9 @@ def main_menu():
         print("  1. Show billed AWS services")
         print("  2. Run S3 Cleanup Wizard")
         print("  3. Run CloudFormation Cleanup Wizard")
-        print("  4. View logs")
-        print("  5. Exit")
+        print("  4. Run Other Services Cleanup Wizard")
+        print("  5. View logs")
+        print("  6. Exit")
         choice = input("Select an option: ")
 
         if choice == '1':
@@ -76,8 +77,10 @@ def main_menu():
         elif choice == '3':
             invoke_script('cloud_formation_wizard.py')
         elif choice == '4':
-            show_logs()
+            invoke_script('other_services_wizard.py')
         elif choice == '5':
+            show_logs()
+        elif choice == '6':
             print("Exiting ExaliSweep. Goodbye!")
             break
         else:
