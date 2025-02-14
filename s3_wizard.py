@@ -1,6 +1,7 @@
 import boto3
 import datetime
 from logger import log_deletion_attempt
+import config
 
 def list_s3_buckets():
     s3_client = boto3.client('s3')
@@ -56,10 +57,13 @@ def delete_selected_buckets():
     if confirm == "yes":
         for bucket in selected_buckets:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            log_deletion_attempt(bucket, timestamp)
-            print(f"📝 Logged delete attempt for: {bucket}")
-            # Actual deletion would go here:
-            # s3_client.delete_bucket(Bucket=bucket)
+            if config.delete_for_real == False:
+                log_deletion_attempt(bucket, timestamp)
+                print(f"📝 Logged delete attempt for: {bucket}")
+            else:
+                pass
+                # Actual deletion would go here:
+                # s3_client.delete_bucket(Bucket=bucket)
     else:
         print("🚫 Deletion canceled.")
 
