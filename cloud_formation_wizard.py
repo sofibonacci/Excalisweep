@@ -66,12 +66,11 @@ def delete_selected_stacks():
         if confirm == "yes":
             for stack in selected_stacks:
                 timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                if config.delete_for_real== False:
+                if config.delete_for_real == False:
                     log_deletion_attempt(stack, timestamp)
                     print(f"📝 Logged delete attempt for: {stack}")
                 else:
                     pass
-                    # Aquí iría la eliminación real:
                     # cloudformation_client.delete_stack(StackName=stack)
         else:
             print("🚫 Deletion canceled.")
