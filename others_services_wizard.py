@@ -41,7 +41,7 @@ def choose_method():
             print("\n❌ Invalid method index.")
     except ValueError:
         print("\n❌ Please enter a valid number.")
-    
+
 def execute_method(service_name, method_name):
     try:
         client = boto3.client(service_name)
@@ -53,8 +53,6 @@ def execute_method(service_name, method_name):
         print(f"\nMethod: {method_name}")
         print(f"\nDescription:\n{docstring[0]}\n" if docstring else "\nNo description available.\n")
     
-        
-        
         if required_params:
             print(f"This method requires parameters: {', '.join(required_params)}")
             params = input("Enter parameters as a JSON string: ").strip() ##TODO ADD PARMS NAME

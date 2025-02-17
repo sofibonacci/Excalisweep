@@ -1,6 +1,7 @@
 import boto3
 import datetime
 from logger import log_deletion_attempt
+import config
 
 def list_cloudformation_stacks():
     try:
@@ -38,7 +39,7 @@ def delete_selected_stacks():
     
     if not None:
         
-        print("\n🗑️ All CloudFormation Stacks:")
+        print("\n All CloudFormation Stacks:")
         stack_list = list(stacks.keys())
         for idx, stack in enumerate(stack_list, start=1):
             status = stacks[stack]['Status']
@@ -65,9 +66,12 @@ def delete_selected_stacks():
         if confirm == "yes":
             for stack in selected_stacks:
                 timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                log_deletion_attempt(stack, timestamp)
-                print(f"📝 Logged delete attempt for: {stack}")
-                # Aquí iría la eliminación real:
-                # cloudformation_client.delete_stack(StackName=stack)
+                if config.delete_for_real== False:
+                    log_deletion_attempt(stack, timestamp)
+                    print(f"📝 Logged delete attempt for: {stack}")
+                else:
+                    pass
+                    # Aquí iría la eliminación real:
+                    # cloudformation_client.delete_stack(StackName=stack)
         else:
             print("🚫 Deletion canceled.")
