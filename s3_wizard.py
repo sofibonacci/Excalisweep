@@ -24,6 +24,7 @@ def list_s3_buckets():
     return buckets
 
 def delete_selected_buckets():
+    print("Waiting for buckets...")
     s3_client = boto3.client('s3')
     buckets = list_s3_buckets()
 
@@ -71,10 +72,15 @@ def delete_selected_buckets():
         print("Deletion canceled.")
 
 def interactive_menu():
-    print("\nWelcome to Excalisweep S3 Wizard!")
-    print("Your tool for managing AWS S3 Buckets efficiently.\n")
+    print("""
+    *****************************************
+    *   Welcome to ExcaliSweep S3 Wizard!   *
+    *   Your S3 Buckets Cleanup Assistant   *
+    *****************************************
+""")
 
     while True:
+        #add choice to show logs
         print("\nMain Menu:")
         print("1. List S3 Buckets and Status")
         print("2. Delete Buckets")
@@ -82,6 +88,7 @@ def interactive_menu():
         choice = input("Enter your choice: ").strip()
 
         if choice == "1":
+            print("Waiting for buckets...")
             buckets = list_s3_buckets()
             if buckets:
                 print("\n🪣 S3 Buckets:")

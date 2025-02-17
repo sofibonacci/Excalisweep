@@ -2,6 +2,7 @@ import boto3
 import os
 import subprocess
 from datetime import datetime, timedelta
+from config import days_to_observe
 
 def show_intro():
     print("""
@@ -12,54 +13,77 @@ def show_intro():
     """)
 
 def list_billed_services():
-    client = boto3.client('ce')  # Cost Explorer
-    end_date = datetime.utcnow().date()
-    start_date = end_date - timedelta(days=30)
+    """Retrieve AWS services that incurred costs in the last specified number of days on config.py."""
+    try:
+        client = boto3.client('ce')  # Cost Explorer
+        end_date = datetime.utcnow().date()
+        start_date = end_date - timedelta(days=days_to_observe)
 
-    response = client.get_cost_and_usage(
-        TimePeriod={'Start': start_date.strftime('%Y-%m-%d'), 'End': end_date.strftime('%Y-%m-%d')},
-        Granularity='MONTHLY',
-        Metrics=['UnblendedCost'],
-        GroupBy=[{'Type': 'DIMENSION', 'Key': 'SERVICE'}]
-    )
+        response = client.get_cost_and_usage(
+            TimePeriod={'Start': start_date.strftime('%Y-%m-%d'), 'End': end_date.strftime('%Y-%m-%d')},
+            Granularity='MONTHLY',
+            Metrics=['UnblendedCost'],
+            GroupBy=[{'Type': 'DIMENSION', 'Key': 'SERVICE'}]
+        )
 
-    billed_services = {}
-    for group in response.get('ResultsByTime', [])[0].get('Groups', []):
-        service_name = group['Keys'][0]
-        cost = float(group['Metrics']['UnblendedCost']['Amount'])
-        if cost > 0:
-            billed_services[service_name] = cost
-
-    return billed_services
+        billed_services = {
+            group['Keys'][0]: float(group['Metrics']['UnblendedCost']['Amount'])
+            for group in response.get('ResultsByTime', [])[0].get('Groups', [])
+            if float(group['Metrics']['UnblendedCost']['Amount']) > 0
+        }
+        return billed_services
+    except boto3.exceptions.Boto3Error as e:
+        print(f"Error retrieving billed services: {e}")
+        return {}
 
 def show_billed_services():
-    print("\nAWS Services with costs in the last 30 days:")
+    """Display AWS services that have incurred costs in the last specified number of days."""
+    print(f"\nAWS Services with costs in the last {days_to_observe} days:")
     services = list_billed_services()
     if not services:
         print("  No services with costs found.")
     else:
-        for service, cost in services.items():
+        for service, cost in sorted(services.items(), key=lambda x: x[1], reverse=True):
             print(f"  {service}: ${cost:.2f}")
 
 def invoke_script(script_name):
+    """Execute a cleanup wizard script safely."""
     print(f"\nRunning {script_name}...")
     try:
+        if not os.path.exists(script_name):
+            raise FileNotFoundError(f"Error: {script_name} not found.")
         subprocess.run(['python', script_name], check=True)
-    except FileNotFoundError:
-        print(f"Error: {script_name} not found.")
+    except FileNotFoundError as e:
+        print(e)
     except subprocess.CalledProcessError:
         print(f"Error: {script_name} encountered an issue.")
+    except Exception as e:
+        print(f"Unexpected error running {script_name}: {e}")
 
 def show_logs():
+    """Display logs if available."""
     log_file = 'logs.txt'
     if os.path.exists(log_file):
-        with open(log_file, 'r') as file:
-            print("\n--- Logs ---")
-            print(file.read())
+        try:
+            with open(log_file, 'r', encoding='utf-8') as file:
+                print("\n--- Logs ---")
+                print(file.read())
+        except IOError as e:
+            print(f"Error reading log file: {e}")
     else:
         print("\nNo log file found.")
 
 def main_menu():
+    """Display the main menu and handle user selection."""
+    options = {
+        '1': show_billed_services,
+        '2': lambda: invoke_script('s3_wizard.py'),
+        '3': lambda: invoke_script('cloud_formation_wizard.py'),
+        '4': lambda: invoke_script('other_services_wizard.py'),
+        '5': show_logs,
+        '6': lambda: print("Exiting ExcaliSweep. Goodbye!")
+    }
+    
     while True:
         print("\nOptions:")
         print("  1. Show billed AWS services")
@@ -68,79 +92,18 @@ def main_menu():
         print("  4. Run Other Services Cleanup Wizard")
         print("  5. View logs")
         print("  6. Exit")
-        choice = input("Select an option: ")
-
-        if choice == '1':
-            show_billed_services()
-        elif choice == '2':
-            invoke_script('s3_wizard.py')
-        elif choice == '3':
-            invoke_script('cloud_formation_wizard.py')
-        elif choice == '4':
-            invoke_script('other_services_wizard.py')
-        elif choice == '5':
-            show_logs()
-        elif choice == '6':
-            print("Exiting ExaliSweep. Goodbye!")
-            break
+        choice = input("Select an option: ").strip()
+        
+        action = options.get(choice)
+        if action:
+            if choice == '6':
+                action()
+                break
+            else:
+                action()
         else:
             print("Invalid option. Please try again.")
 
 if __name__ == "__main__":
     show_intro()
     main_menu()
-
-
-
-#----
-
-
-""" should go on cloud formation wizard
-
-
-def list_cloudformation_stacks():
-    client = boto3.client('cloudformation') #choose the client (ex. ec2, lambda....)
-    stacks = {}
-    response = client.list_stacks(StackStatusFilter=['CREATE_COMPLETE', 'UPDATE_COMPLETE']) #retrives a list of the stacks
-    
-    for stack in response.get('StackSummaries', []):
-        stacks[stack['StackName']] = {
-            'CreationTime': stack['CreationTime'],
-            'StackStatus': stack['StackStatus'],
-            'StackId': stack['StackId']
-        }
-    
-    while 'NextToken' in response: #if NextToken is present, there are more stacks to fetch (Pagination Handling)
-        response = client.list_stacks(StackStatusFilter=['CREATE_COMPLETE', 'UPDATE_COMPLETE'], NextToken=response['NextToken'])
-        for stack in response.get('StackSummaries', []):
-            stacks[stack['StackName']] = {
-                'CreationTime': stack['CreationTime'],
-                'StackStatus': stack['StackStatus'],
-                'StackId': stack['StackId']
-            }
-    
-    return stacks
-
-stacks = list_cloudformation_stacks()
-
-print("CloudFormation Stacks:") #print pretty
-for stack_name, stack_info in stacks.items():
-    print(f"{stack_name}:")
-    for key, value in stack_info.items():
-        print(f"  {key}: {value}")
-
-should go on others wizard
-
-
-def list_all_methods(service_name):
-    #shows all methods of a service
-    try:
-        client = boto3.client(service_name)
-        methods = [method for method in dir(client) if callable(getattr(client, method))]
-        for method in methods:
-            print(f"  - {method}")
-    except Exception as e:
-        print("Error")
-
-selected_service = input("\nchoose service ").strip()
-list_all_methods(selected_service) """
