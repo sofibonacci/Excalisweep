@@ -2,12 +2,12 @@ import boto3
 import inspect
 import json
 
-def list_services():
+
+def list_services():  #list of all aws services
     session = boto3.Session()
     return session.get_available_services()
 
-def list_all_methods(service_name):
-    #shows all methods of a service
+def list_all_methods(service_name): #shows all methods of a service
     try:
         client = boto3.client(service_name)
         methods = [method for method in dir(client) if callable(getattr(client, method))]
@@ -19,9 +19,11 @@ def list_all_methods(service_name):
 
 
 
-def choose_method():
+def choose_method():  #shows u all the services and you choose one and then choose a method
     available_services=list_services()
-    print(available_services)
+    for method in available_services:
+            print(method)
+
     service = input("\nEnter an AWS service name (e.g., s3, ec2, lambda): ").strip().lower()
 
     if service not in available_services:
@@ -42,7 +44,7 @@ def choose_method():
     except ValueError:
         print("\n❌ Please enter a valid number.")
 
-def execute_method(service_name, method_name):
+def execute_method(service_name, method_name): #execute the method u choose (and asks u for the parameters)
     try:
         client = boto3.client(service_name)
         method = getattr(client, method_name)

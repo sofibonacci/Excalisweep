@@ -33,16 +33,19 @@ def list_cloudformation_stacks():
     
     except Exception as e:
         print(f"An unexpected error occurred: {str(e)}")
+        
+        
+
 
 def delete_selected_stacks():
     stacks = list_cloudformation_stacks()  
     
-    if not None:
+    if stacks:
         
         print("\n All CloudFormation Stacks:")
         stack_list = list(stacks.keys())
         for idx, stack in enumerate(stack_list, start=1):
-            status = stacks[stack]['Status']
+            status = stacks[stack]['StackStatus']
             print(f"{idx}. {stack} ({status})")
 
         print("\nEnter the numbers of the stacks you want to delete (comma-separated), or type 'all' to delete all:")
@@ -64,13 +67,15 @@ def delete_selected_stacks():
 
         confirm = input(f"\n⚠️ Are you sure you want to delete these {len(selected_stacks)} stack(s)? (yes/no): ").strip().lower()
         if confirm == "yes":
+            cloudformation_client = boto3.client('cloudformation')
             for stack in selected_stacks:
                 timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 if config.delete_for_real == False:
                     log_deletion_attempt(stack, timestamp)
                     print(f"📝 Logged delete attempt for: {stack}")
                 else:
-                    pass
-                    # cloudformation_client.delete_stack(StackName=stack)
+                    cloudformation_client.delete_stack(StackName=stack)
         else:
             print("🚫 Deletion canceled.")
+            
+delete_selected_stacks()
