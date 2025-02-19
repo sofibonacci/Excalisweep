@@ -7,7 +7,7 @@ def list_cloudformation_stacks():
     try:
         client = boto3.client('cloudformation') #choose the client (ex. ec2, lambda....)
         stacks = {}
-        response = client.list_stacks(StackStatusFilter=['CREATE_COMPLETE', 'UPDATE_COMPLETE']) #retrives a list of the stacks
+        response = client.list_stacks() #retrives a list of the stacks
         
         for stack in response.get('StackSummaries', []):
             stacks[stack['StackName']] = {
@@ -17,7 +17,7 @@ def list_cloudformation_stacks():
             }
         
         while 'NextToken' in response: #if NextToken is present, there are more stacks to fetch (Pagination Handling)
-            response = client.list_stacks(StackStatusFilter=['CREATE_COMPLETE', 'UPDATE_COMPLETE'], NextToken=response['NextToken'])
+            response = client.list_stacks( NextToken=response['NextToken'])
             for stack in response.get('StackSummaries', []):
                 stacks[stack['StackName']] = {
                     'CreationTime': stack['CreationTime'],
