@@ -62,7 +62,7 @@ def invoke_script(script_name):
 
 def show_logs():
     """Display logs if available."""
-    log_file = 'logs.txt'
+    log_file = 'excalisweep.logs'
     if os.path.exists(log_file):
         try:
             with open(log_file, 'r', encoding='utf-8') as file:
