@@ -65,8 +65,9 @@ def delete_selected_buckets():
                     print(f"Successfully deleted: {bucket}")
                 except Exception as e:
                     print(f"Failed to delete {bucket}: {str(e)}")
+                    log_deletion_attempt(bucket, "S3", False)
             else:
-                log_deletion_attempt(bucket, timestamp)
+                log_deletion_attempt(bucket, "S3", True)
                 print(f"Logged delete attempt for: {bucket}")
     else:
         print("Deletion canceled.")
