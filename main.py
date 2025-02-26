@@ -80,8 +80,9 @@ def main_menu():
         '2': lambda: invoke_script('s3_wizard.py'),
         '3': lambda: invoke_script('cloud_formation_wizard.py'),
         '4': lambda: invoke_script('other_services_wizard.py'),
-        '5': show_logs,
-        '6': lambda: print("Exiting ExcaliSweep. Goodbye!")
+        '5': lambda: invoke_script('ec2_wizard.py'),
+        '6': show_logs,
+        '7': lambda: print("Exiting ExcaliSweep. Goodbye!")
     }
     
     while True:
@@ -90,13 +91,14 @@ def main_menu():
         print("  2. Run S3 Cleanup Wizard")
         print("  3. Run CloudFormation Cleanup Wizard")
         print("  4. Run Other Services Cleanup Wizard")
-        print("  5. View logs")
-        print("  6. Exit")
+        print("  5. Run EC2 Cleanup Wizard")
+        print("  6. View logs")
+        print("  7. Exit")
         choice = input("Select an option: ").strip()
         
         action = options.get(choice)
         if action:
-            if choice == '6':
+            if choice == '7':
                 action()
                 break
             else:
