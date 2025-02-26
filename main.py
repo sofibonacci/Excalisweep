@@ -22,7 +22,10 @@ def list_billed_services():
 
         response = client.get_cost_and_usage(
             TimePeriod={'Start': start_date.strftime('%Y-%m-%d'), 'End': end_date.strftime('%Y-%m-%d')},
-            Granularity='MONTHLY')
+            Granularity='MONTHLY',
+            Metrics=['UnblendedCost'],
+            GroupBy=[{'Type': 'DIMENSION', 'Key': 'SERVICE'}]
+        )
 
         billed_services = {
             group['Keys'][0]: float(group['Metrics']['UnblendedCost']['Amount'])
