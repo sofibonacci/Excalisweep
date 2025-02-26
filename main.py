@@ -11,6 +11,7 @@ def show_intro():
     *   Your AWS Cleanup Wizard Assistant  *
     ****************************************
     """)
+    print("Warning: The resources displayed are based on your current Availability Zone (AZ) and Region. If you're unable to find what you're looking for, try switching to a different AZ or Region.")
 
 def list_billed_services():
     """Retrieve AWS services that incurred costs in the last specified number of days on config.py."""
@@ -22,9 +23,6 @@ def list_billed_services():
         response = client.get_cost_and_usage(
             TimePeriod={'Start': start_date.strftime('%Y-%m-%d'), 'End': end_date.strftime('%Y-%m-%d')},
             Granularity='MONTHLY',
-            Metrics=['UnblendedCost'],
-            GroupBy=[{'Type': 'DIMENSION', 'Key': 'SERVICE'}]
-        )
 
         billed_services = {
             group['Keys'][0]: float(group['Metrics']['UnblendedCost']['Amount'])
