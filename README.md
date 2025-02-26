@@ -9,3 +9,9 @@ Every AWS Service (S3, EC2, etc) has its own deletion process (e.g., different b
 
 ## How to use: 
 Run the wizard in CloudShell within the AWS Sandbox you desire to manage.
+
+## Logs:
+When an action is performed it's logged to excalisweep.logs, a file unique to each user -added to .gitignore just in case-. A log entry should look like this:
+```bash
+2025-02-18 14:00:03 (UTC +0) | S3 Bucket | {bucket_name} | SUCCESSFUL
+```
