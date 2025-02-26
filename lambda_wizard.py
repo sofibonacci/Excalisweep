@@ -19,7 +19,7 @@ def list_lambda_functions():
             versions_list = [version['Version'] for version in versions.get('Versions', [])]
             
             functions[function_name] = {
-                'Created': function['DateCreated'],
+                'Created': function['LastModified'],
                 'Aliases': aliases_list,
                 'Versions': versions_list
             }
