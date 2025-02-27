@@ -2,7 +2,7 @@ import boto3
 import os
 import subprocess
 from datetime import datetime, timedelta
-from config import days_to_observe
+from config import *
 
 def show_intro():
     print("""
@@ -12,7 +12,7 @@ def show_intro():
     ****************************************
     """)
     print("Warning: The resources displayed are based on your current Availability Zone (AZ) and Region. If you're unable to find what you're looking for, try switching to a different AZ or Region."       )
-
+    print(f'Warning: The current variable for real deletion is set on: {delete_for_real}. Either way, be careful!')
 def list_billed_services():
     """Retrieve AWS services that incurred costs in the last specified number of days on config.py."""
     try:
