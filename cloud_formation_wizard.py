@@ -5,34 +5,24 @@ import config
 
 def list_cloudformation_stacks():
     try:
-        client = boto3.client('cloudformation')
+        client = boto3.client('cloudformation') #choose the client (ex. ec2, lambda....)
         stacks = {}
-        response = client.list_stacks()
-
-        for stack in response.get('StackSummaries', []):
-            stack_name = stack['StackName']
-            
+        response = client.list_stacks(StackStatusFilter=['CREATE_COMPLETE', 'UPDATE_COMPLETE']) #retrives a list of the stacks
         
-            stack_details = client.describe_stacks(StackName=stack_name)['Stacks'][0]
-            
-            stacks[stack_name] = {
+        for stack in response.get('StackSummaries', []):
+            stacks[stack['StackName']] = {
                 'CreationTime': stack['CreationTime'],
                 'StackStatus': stack['StackStatus'],
-                'StackId': stack['StackId'],
-                'Description': stack_details.get('Description', 'No description available')
+                'StackId': stack['StackId']
             }
         
-        while 'NextToken' in response: 
-            response = client.list_stacks(NextToken=response['NextToken'])
+        while 'NextToken' in response: #if NextToken is present, there are more stacks to fetch (Pagination Handling)
+            response = client.list_stacks(StackStatusFilter=['CREATE_COMPLETE', 'UPDATE_COMPLETE'], NextToken=response['NextToken'])
             for stack in response.get('StackSummaries', []):
-                stack_name = stack['StackName']
-                stack_details = client.describe_stacks(StackName=stack_name)['Stacks'][0]
-                
-                stacks[stack_name] = {
+                stacks[stack['StackName']] = {
                     'CreationTime': stack['CreationTime'],
                     'StackStatus': stack['StackStatus'],
-                    'StackId': stack['StackId'],
-                    'Description': stack_details.get('Description', 'No description available')
+                    'StackId': stack['StackId']
                 }
         
         if not stacks:
