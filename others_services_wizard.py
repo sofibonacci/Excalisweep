@@ -1,6 +1,7 @@
 import boto3
 import inspect
 import json
+import config
 
 
 def list_services():  #list of all aws services
@@ -11,27 +12,44 @@ def list_all_methods(service_name): #shows all methods of a service
     try:
         client = boto3.client(service_name)
         methods = [method for method in dir(client) if callable(getattr(client, method))]
-        for idx, method in enumerate(methods, start=1):
+        
+        # Filter methods related to deletion and listing
+        delete_keywords = ["delete", "terminate", "remove", "drop", "destroy", "purge", "list"]
+        delete_methods = [method for method in methods if any(kw in method.lower() for kw in delete_keywords)]
+        
+        print("\nMethods related to deletion and listing:")
+        for idx, method in enumerate(delete_methods, start=1):
             print(f"  {idx}. {method}")
+        
+        return delete_methods
+    
     except Exception as e:
-        print("Error")
-    return methods
+        print(f"Error retrieving methods for service '{service_name}': {e}")
+        return 
 
 
 
 def choose_method():  #shows u all the services and you choose one and then choose a method
     available_services=list_services()
-    for method in available_services:
-            print(method)
-
+    if not available_services:
+        print("\n❌ No available AWS services found.")
+        return
+    
+    print("\nAvailable AWS services:")
+    for service in available_services:
+        print(f" {service}")
+    
+    
     service = input("\nEnter an AWS service name (e.g., s3, ec2, lambda): ").strip().lower()
 
     if service not in available_services:
-        print("\n❌ Invalid service name. Use one of these:\n", ", ".join(available_services))
+        print("\n❌ Invalid service name")
         return
     
     methods = list_all_methods(service)
+    
     if not methods:
+        print("\n❌ No available methods found.")
         return
 
     method_index = int(input("\nChoose a method to use by index: ")) - 1
@@ -40,7 +58,9 @@ def choose_method():  #shows u all the services and you choose one and then choo
             method_name = methods[method_index]
             execute_method(service, method_name)
         else:
+            
             print("\n❌ Invalid method index.")
+            
     except ValueError:
         print("\n❌ Please enter a valid number.")
 
@@ -69,13 +89,47 @@ def execute_method(service_name, method_name): #execute the method u choose (and
             params_dict = {}
         
         print(f"\nExecuting {service_name}.{method_name}()...")
-        response = method(**params_dict)
-        print("\nResponse:", response)
+        if config.delete_for_real :
+            response = method(**params_dict)
+            print("\nResponse:", response)
     except Exception as e:
         print(f"Error executing method: {e}")
 
 
+def interactive_menu():  # Interactive menu for user interaction
+    print("""
+    *****************************************
+    *   Welcome to AWS Service Explorer!   *
+    *   Your AWS Service and Method Assistant   *
+    *****************************************
+    """)
 
-choose_method()
+    while True:
+        print("\nMain Menu:")
+        print("1. List AWS Services")
+        print("2. Choose a Service and Method")
+        print("3. Exit")
+        choice = input("Enter your choice: ").strip()
+
+        if choice == "1":
+            services = list_services()
+            if services:
+                print("\nAvailable AWS services:")
+                for service in services:
+                    print(f" {service}")
+        
+        elif choice == "2":
+            choose_method()
+
+        elif choice == "3":
+            print("\n🔚 Exiting AWS Service Explorer. Have a great day!")
+            break
+        
+        else:
+            print("\nInvalid choice. Please enter 1, 2, or 3.")
+
+if __name__ == "__main__":
+    interactive_menu()
+
 
 
