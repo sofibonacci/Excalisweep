@@ -12,7 +12,7 @@ def show_intro():
     ****************************************
     """)
     print("Warning: The resources displayed are based on your current Availability Zone (AZ) and Region. If you're unable to find what you're looking for, try switching to a different AZ or Region."       )
-    print(f'Warning: The current variable for real deletion is set on: {delete_for_real}. Either way, be careful!')
+    print(f'Warning: The current variable for real deletion is set on {delete_for_real}. Either way, be careful!')
 def list_billed_services():
     """Retrieve AWS services that incurred costs in the last specified number of days on config.py."""
     try:
@@ -53,7 +53,7 @@ def invoke_script(script_name):
     try:
         if not os.path.exists(script_name):
             raise FileNotFoundError(f"Error: {script_name} not found.")
-        subprocess.run(['python', script_name], check=True)
+        subprocess.run(['python', 'wizards/script_name'], check=True)
     except FileNotFoundError as e:
         print(e)
     except subprocess.CalledProcessError:
