@@ -2,6 +2,7 @@ import boto3
 import inspect
 import json
 import config
+from logger import log_deletion_attempt
 
 
 def list_services():  #list of all aws services
@@ -92,6 +93,9 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         if config.delete_for_real :
             response = method(**params_dict)
             print("\nResponse:", response)
+        else:
+            log_deletion_attempt(stack, timestamp)
+            print(f"📝 Logged delete attempt for: {stack}")
     except Exception as e:
         print(f"Error executing method: {e}")
 
