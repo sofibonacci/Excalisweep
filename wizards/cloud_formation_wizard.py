@@ -1,6 +1,6 @@
 import boto3
 import datetime
-from logger import log_deletion_attempt
+from ..logger import log_deletion_attempt
 import config
 
 def list_cloudformation_stacks():
