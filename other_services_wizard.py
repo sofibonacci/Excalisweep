@@ -4,7 +4,7 @@ import json
 import config
 from logger import log_deletion_attempt
 import datetime
-import pprint
+import json
 
 
 def list_services():  #list of all aws services
@@ -94,7 +94,8 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         print(f"\nExecuting {service_name}.{method_name}()...")
         #if config.delete_for_real :
         response = method(**params_dict)
-        print("\nResponse:", response)
+        print("\nResponse:")
+        print(json.dumps(response, indent=4))
         #else:
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         #log_deletion_attempt(params_dict, timestamp)
