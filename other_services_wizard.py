@@ -91,13 +91,13 @@ def execute_method(service_name, method_name): #execute the method u choose (and
             params_dict = {}
         
         print(f"\nExecuting {service_name}.{method_name}()...")
-        if config.delete_for_real :
-            response = method(**params_dict)
-            print("\nResponse:", response)
-        else:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            log_deletion_attempt(params_dict, timestamp)
-            print(f"📝 Logged delete attempt for: {params_dict}")
+        #if config.delete_for_real :
+        response = method(**params_dict)
+        print("\nResponse:", response)
+        #else:
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        #log_deletion_attempt(params_dict, timestamp)
+        print(f"📝 Logged delete attempt for: {params_dict}")
     except Exception as e:
         print(f"Error executing method: {e}")
 

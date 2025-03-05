@@ -106,7 +106,7 @@ def interactive_menu():
         #add choice to show logs
         print("\nMain Menu:")
         print("1. List Cloud Formation Stacks and Status")
-        print("2. Delete Buckets")
+        print("2. Delete Stacks")
         print("3. Exit")
         choice = input("Enter your choice: ").strip()
 
