@@ -51,7 +51,7 @@ def invoke_script(script_name):
     """Execute a cleanup wizard script safely."""
     print(f"\nRunning {script_name}...")
     try:
-        if not os.path.exists(script_name):
+        if not os.path.exists(f'wizards/{script_name}'):
             raise FileNotFoundError(f"Error: {script_name} not found.")
         subprocess.run(['python', f'wizards/{script_name}'], check=True)
     except FileNotFoundError as e:
