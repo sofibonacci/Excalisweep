@@ -50,10 +50,9 @@ def show_billed_services():
 def invoke_script(script_name):
     """Execute a cleanup wizard script safely."""
     print(f"\nRunning {script_name}...")
+    script_path=f'wizards.{script_name}'
     try:
-        if not os.path.exists(f'wizards/{script_name}'):
-            raise FileNotFoundError(f"Error: {script_name} not found.")
-        subprocess.run(['python', f'wizards/{script_name}'], check=True)
+        subprocess.run(['python','-m',script_path], check=True)
     except FileNotFoundError as e:
         print(e)
     except subprocess.CalledProcessError:
