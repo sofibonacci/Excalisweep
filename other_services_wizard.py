@@ -3,6 +3,7 @@ import inspect
 import json
 import config
 from logger import log_deletion_attempt
+import datetime
 
 
 def list_services():  #list of all aws services
@@ -94,8 +95,9 @@ def execute_method(service_name, method_name): #execute the method u choose (and
             response = method(**params_dict)
             print("\nResponse:", response)
         else:
-            log_deletion_attempt(stack, timestamp)
-            print(f"📝 Logged delete attempt for: {stack}")
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log_deletion_attempt(params_dict, timestamp)
+            print(f"📝 Logged delete attempt for: {params_dict}")
     except Exception as e:
         print(f"Error executing method: {e}")
 
