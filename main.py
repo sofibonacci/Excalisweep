@@ -53,7 +53,7 @@ def invoke_script(script_name):
     try:
         if not os.path.exists(script_name):
             raise FileNotFoundError(f"Error: {script_name} not found.")
-        subprocess.run(['python', 'wizards/script_name'], check=True)
+        subprocess.run(['python', f'wizards/{script_name}'], check=True)
     except FileNotFoundError as e:
         print(e)
     except subprocess.CalledProcessError:
