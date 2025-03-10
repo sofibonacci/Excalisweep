@@ -77,11 +77,11 @@ def main_menu():
     """Display the main menu and handle user selection."""
     options = {
         '1': show_billed_services,
-        '2': lambda: invoke_script('s3_wizard.py'),
-        '3': lambda: invoke_script('cloud_formation_wizard.py'),
-        '4': lambda: invoke_script('other_services_wizard.py'),
-        '5': lambda: invoke_script('ec2_wizard.py'),
-        '6': lambda: invoke_script('lambda_wizard.py'),
+        '2': lambda: invoke_script('s3_wizard'),
+        '3': lambda: invoke_script('cloud_formation_wizard'),
+        '4': lambda: invoke_script('other_services_wizard'),
+        '5': lambda: invoke_script('ec2_wizard'),
+        '6': lambda: invoke_script('lambda_wizard'),
         '7': show_logs,
         '8': lambda: print("Exiting ExcaliSweep. Goodbye!")
     }

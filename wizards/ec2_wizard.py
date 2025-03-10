@@ -1,7 +1,6 @@
 import boto3
 import datetime
-from ..logger import log_deletion_attempt
-import config
+from main import logger as l, config as c
 
 def list_ec2_instances():
     ec2_client = boto3.client('ec2')
@@ -62,15 +61,15 @@ def terminate_selected_instances():
     if confirm == "yes":
         for instance in selected_instances:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if config.delete_for_real:
+            if c.config.delete_for_real:
                 try:
                     ec2_client.terminate_instances(InstanceIds=[instance])
                     print(f"Successfully terminated: {instance}")
                 except Exception as e:
                     print(f"Failed to terminate {instance}: {str(e)}")
-                    log_deletion_attempt(instance, "EC2", False)
+                    l.log_deletion_attempt(instance, "EC2", False)
             else:
-                log_deletion_attempt(instance, "EC2", True)
+                l.log_deletion_attempt(instance, "EC2", True)
                 print(f"Logged terminate attempt for: {instance}")
     else:
         print("Termination canceled.")
