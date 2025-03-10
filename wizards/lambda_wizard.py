@@ -1,6 +1,10 @@
 import boto3
 import datetime
-from main import logger as l, config as c
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import logger as l
+import config as c
 
 def list_lambda_functions():
     lambda_client = boto3.client('lambda')
