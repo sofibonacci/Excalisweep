@@ -1,9 +1,10 @@
-import boto3
+import boto3, botocore
 import datetime
 from logger import log_deletion_attempt
 import config
+from utility import *
 
-def list_cloudformation_stacks():
+def list_cloudformation_stacks(): #retrieve and display all cloudformation stacks
     try:
         client = boto3.client('cloudformation')
         stacks = {}
@@ -30,69 +31,70 @@ def list_cloudformation_stacks():
                     'StackId': stack['StackId'],
                 }
         
-        if not stacks:
-            print("\n⚠️ No CloudFormation stacks found.")
-            return None
+        print_list_enumerate(list(stacks.keys()), "CloudFormation Stacks")
+        
+        return stacks if stacks else {}
     
-        else:
-            print("\n All CloudFormation Stacks:")
-            stack_list = list(stacks.keys())
-            for idx, stack in enumerate(stack_list, start=1):
-                status = stacks[stack]['StackStatus']
-                print(f"{idx}. {stack} ({status})")
-                
-        return stacks
-    
+    except botocore.exceptions.EndpointConnectionError as e:
+        print(f"❌ Connection error: {e}")
+        return {}
+    except botocore.exceptions.BotoCoreError as e:
+        print(f"❌ AWS BotoCore error: {e}")
+        return {}
+    except boto3.exceptions.Boto3Error as e:
+        print(f"❌ AWS Boto3 error: {e}")
+        return {}
     except Exception as e:
-        print(f"An unexpected error occurred: {str(e)}")
+        print(f"❌ An unexpected error occurred: {e}")
+        return {}
         
         
 
 
-def delete_selected_stacks():
-    
+def delete_selected_stacks(): #delete selected cloudformation stacks
     print("Waiting for stacks...")
     stacks = list_cloudformation_stacks()  
-    stack_list = list(stacks.keys())
     
     if not stacks:
         return
         
-
-    print("\nEnter the numbers of the stacks you want to delete (comma-separated), or type 'all' to delete all:")
-    choice = input("Your choice: ").strip().lower()
-
-    if choice == "all":
-        selected_stacks = stack_list
-    else:
-        try:
-            indices = [int(i.strip()) - 1 for i in choice.split(",")]
-            selected_stacks = [stack_list[i] for i in indices if 0 <= i < len(stack_list)]
-        except (ValueError, IndexError):
-            print("\n❌ Invalid selection. No stacks deleted.")
-            return
+    selected_stacks = select_from_list(list(stacks.keys()),
+                                       "Enter the numbers of the stacks you want to delete (comma-separated), or type 'all' to delete all:",
+                                       allow_all=True)
 
     if not selected_stacks:
         print("\n🚫 No valid stacks selected for deletion.")
         return
 
     confirm = input(f"\n⚠️ Are you sure you want to delete these {len(selected_stacks)} stack(s)? (yes/no): ").strip().lower()
-    if confirm == "yes":
+    if confirm != "yes":
+        print("🚫 Deletion canceled.")
+        return
+    try:
         cloudformation_client = boto3.client('cloudformation')
         for stack in selected_stacks:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if config.delete_for_real:
-                try: 
+            try:
+                if config.delete_for_real:
                     cloudformation_client.delete_stack(StackName=stack)
-                    print(f"Successfully deleted: {stack}")
-                except Exception as e:
-                    print(f"Failed to delete {stack}: {str(e)}")
-            else:
-                log_deletion_attempt(stack, timestamp)
-                print(f"📝 Logged delete attempt for: {stack}")
+                    print(f"✅ Successfully deleted: {stack}")
+                else:
+                    log_deletion_attempt(stack, timestamp)
+                    print(f"📝 Logged delete attempt for: {stack}")
             
-    else:
-        print("🚫 Deletion canceled.")       
+            except botocore.exceptions.EndpointConnectionError as e:
+                print(f"❌ Connection error while deleting {stack}: {e}")
+            except botocore.exceptions.BotoCoreError as e:
+                print(f"❌ AWS BotoCore error while deleting {stack}: {e}")
+            except boto3.exceptions.Boto3Error as e:
+                print(f"❌ AWS Boto3 error while deleting {stack}: {e}")
+            except Exception as e:
+                print(f"❌ Unexpected error while deleting {stack}: {e}")
+    
+    except botocore.exceptions.BotoCoreError as e:
+        print(f"❌ General AWS BotoCore error: {e}")
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
             
 def interactive_menu():
     print("""
