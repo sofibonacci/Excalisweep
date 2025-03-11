@@ -73,8 +73,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         
         
         if required_params:
-            print(f"This method requires parameters: {', '.join(required_params)}")
-            params = input("Enter parameters as a JSON string: ").strip() ##TODO ADD PARMS NAME
+            params = input("Enter parameters as a JSON string (ex. : {'key': 'value'}): ").strip() 
             params_dict = {}
             if params:
                 try:
