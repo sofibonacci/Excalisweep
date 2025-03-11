@@ -69,7 +69,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         required_params = [param for param, details in signature.parameters.items() if details.default == inspect.Parameter.empty]
         
         print(f"\nMethod: {method_name}")
-        print(f"\nDescription:\n{docstring[0]}, {match} \n" if docstring else "\nNo description available.\n")
+        print(f"\nDescription:\n{docstring[0]} \n {match}\n" if docstring else "\nNo description available.\n")
         
         
         if required_params:
