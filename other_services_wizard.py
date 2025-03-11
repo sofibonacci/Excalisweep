@@ -67,7 +67,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         print('hasta aca')
         request_syntax_pattern = r"\*\*Request Syntax\*\*[\s\S]*?response\s*=\s*client\.(\w+)\s*\(([\s\S]+?)\)"
         print('hasta aca')
-        match = re.search(request_syntax_pattern, docstring)
+        match = re.search(request_syntax_pattern, inspect.getdoc(method))
         print('hasta aca')
         required_params = [param for param, details in signature.parameters.items() if details.default == inspect.Parameter.empty]
         
