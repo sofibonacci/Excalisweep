@@ -64,15 +64,12 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         method = getattr(client, method_name)
         signature = inspect.signature(method)
         docstring = inspect.getdoc(method).split('\n')
-        print('hasta aca')
         request_syntax_pattern = r"\*\*Request Syntax\*\*[\s\S]*?response\s*=\s*client\.(\w+)\s*\(([\s\S]+?)\)"
-        print('hasta aca')
         match = re.search(request_syntax_pattern, inspect.getdoc(method))
-        print('hasta aca')
         required_params = [param for param, details in signature.parameters.items() if details.default == inspect.Parameter.empty]
         
         print(f"\nMethod: {method_name}")
-        print(f"\nDescription:\n{docstring[0]}, {match} \n" if docstring else "\nNo description available.\n")
+        print(f"\nDescription:\n{docstring[0]}, {match.group(1)} \n" if docstring else "\nNo description available.\n")
         
         
         if required_params:
