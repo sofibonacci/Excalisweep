@@ -113,7 +113,7 @@ def interactive_menu():
         choice = input("Enter your choice: ").strip()
 
         if choice == "1":
-            print("Waiting for buckets...")
+            print("Waiting for stacks...")
             buckets = list_cloudformation_stacks()
         
         elif choice == "2":
