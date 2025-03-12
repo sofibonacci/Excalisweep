@@ -3,8 +3,8 @@ import datetime
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import logger as l
-import config as c
+import logger 
+import config 
 
 def list_s3_buckets():
     s3_client = boto3.client('s3')
@@ -62,7 +62,7 @@ def empty_bucket(bucket_name):
 
     except Exception as e:
         print(f"Error emptying bucket {bucket_name}: {str(e)}")
-        l.log_deletion_attempt(bucket_name, "S3", False)
+        logger.log_deletion_attempt(bucket_name, "S3", False)
         return False
 
     return True
@@ -103,7 +103,7 @@ def delete_selected_buckets():
     if confirm == "yes":
         for bucket in selected_buckets:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if c.config.delete_for_real:
+            if config.delete_for_real:
                 # Empty the bucket before deleting it
                 if empty_bucket(bucket):
                     try:
@@ -111,7 +111,7 @@ def delete_selected_buckets():
                         print(f"Successfully deleted: {bucket}")
                     except Exception as e:
                         print(f"Failed to delete {bucket}: {str(e)}")
-                        l.log_deletion_attempt(bucket, "S3", False)
+                        logger.log_deletion_attempt(bucket, "S3", False)
                 else:
                     print(f"Failed to empty bucket {bucket}. Skipping deletion.")
             else:

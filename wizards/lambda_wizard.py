@@ -3,8 +3,8 @@ import datetime
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import logger as l
-import config as c
+import logger 
+import config 
 
 def list_lambda_functions():
     lambda_client = boto3.client('lambda')
@@ -28,7 +28,7 @@ def list_lambda_functions():
             }
         except Exception as e:
             print(f"Error fetching details for Lambda function {function_name}: {str(e)}")
-            l.log_deletion_attempt(function_name, "Lambda", False)
+            logger.log_deletion_attempt(function_name, "Lambda", False)
     
     return functions
 
@@ -53,7 +53,7 @@ def delete_lambda_function(function_name, lambda_client):
         return True
     except Exception as e:
         print(f"Error deleting Lambda function {function_name}: {str(e)}")
-        l.log_deletion_attempt(function_name, "Lambda", False)
+        logger.log_deletion_attempt(function_name, "Lambda", False)
         return False
 
 def delete_selected_lambda_functions():
@@ -91,14 +91,14 @@ def delete_selected_lambda_functions():
     if confirm == "yes":
         for function in selected_functions:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if c.config.delete_for_real:
+            if config.delete_for_real:
                 # Delete the function and its resources
                 if delete_lambda_function(function, lambda_client):
                     print(f"Successfully deleted Lambda function and resources: {function}")
                 else:
                     print(f"Failed to delete Lambda function: {function}. Skipping.")
             else:
-                l.log_deletion_attempt(function, "Lambda", True)
+                logger.log_deletion_attempt(function, "Lambda", True)
                 print(f"Logged delete attempt for: {function}")
     else:
         print("Deletion canceled.")

@@ -3,8 +3,8 @@ import datetime
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import logger as l
-import config as c
+import logger 
+import config 
 
 def list_ec2_instances():
     ec2_client = boto3.client('ec2')
@@ -65,15 +65,15 @@ def terminate_selected_instances():
     if confirm == "yes":
         for instance in selected_instances:
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if c.config.delete_for_real:
+            if config.delete_for_real:
                 try:
                     ec2_client.terminate_instances(InstanceIds=[instance])
                     print(f"Successfully terminated: {instance}")
                 except Exception as e:
                     print(f"Failed to terminate {instance}: {str(e)}")
-                    l.log_deletion_attempt(instance, "EC2", False)
+                    logger.log_deletion_attempt(instance, "EC2", False)
             else:
-                l.log_deletion_attempt(instance, "EC2", True)
+                logger.log_deletion_attempt(instance, "EC2", True)
                 print(f"Logged terminate attempt for: {instance}")
     else:
         print("Termination canceled.")
