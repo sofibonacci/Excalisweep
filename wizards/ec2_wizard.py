@@ -1,7 +1,10 @@
 import boto3
 import datetime
-from logger import log_deletion_attempt
-import config
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import logger 
+import config 
 
 def list_ec2_instances():
     ec2_client = boto3.client('ec2')
@@ -68,9 +71,9 @@ def terminate_selected_instances():
                     print(f"Successfully terminated: {instance}")
                 except Exception as e:
                     print(f"Failed to terminate {instance}: {str(e)}")
-                    log_deletion_attempt(instance, "EC2", False)
+                    logger.log_deletion_attempt(instance, "EC2", False)
             else:
-                log_deletion_attempt(instance, "EC2", True)
+                logger.log_deletion_attempt(instance, "EC2", True)
                 print(f"Logged terminate attempt for: {instance}")
     else:
         print("Termination canceled.")

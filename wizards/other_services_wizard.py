@@ -1,7 +1,11 @@
 import boto3
 import inspect
 import json
-
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+import logger 
+import config 
 
 def list_services():  #list of all aws services
     session = boto3.Session()

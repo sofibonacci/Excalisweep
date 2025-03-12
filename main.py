@@ -2,7 +2,7 @@ import boto3
 import os
 import subprocess
 from datetime import datetime, timedelta
-from config import days_to_observe
+from config import *
 
 def show_intro():
     print("""
@@ -12,7 +12,7 @@ def show_intro():
     ****************************************
     """)
     print("Warning: The resources displayed are based on your current Availability Zone (AZ) and Region. If you're unable to find what you're looking for, try switching to a different AZ or Region."       )
-
+    print(f'Warning: The current variable for real deletion is set on {delete_for_real}. Either way, be careful!')
 def list_billed_services():
     """Retrieve AWS services that incurred costs in the last specified number of days on config.py."""
     try:
@@ -50,10 +50,9 @@ def show_billed_services():
 def invoke_script(script_name):
     """Execute a cleanup wizard script safely."""
     print(f"\nRunning {script_name}...")
+    script_path=f'wizards.{script_name}'
     try:
-        if not os.path.exists(script_name):
-            raise FileNotFoundError(f"Error: {script_name} not found.")
-        subprocess.run(['python', script_name], check=True)
+        subprocess.run(['python','-m',script_path], check=True)
     except FileNotFoundError as e:
         print(e)
     except subprocess.CalledProcessError:
@@ -78,11 +77,11 @@ def main_menu():
     """Display the main menu and handle user selection."""
     options = {
         '1': show_billed_services,
-        '2': lambda: invoke_script('s3_wizard.py'),
-        '3': lambda: invoke_script('cloud_formation_wizard.py'),
-        '4': lambda: invoke_script('other_services_wizard.py'),
-        '5': lambda: invoke_script('ec2_wizard.py'),
-        '6': lambda: invoke_script('lambda_wizard.py'),
+        '2': lambda: invoke_script('s3_wizard'),
+        '3': lambda: invoke_script('cloud_formation_wizard'),
+        '4': lambda: invoke_script('other_services_wizard'),
+        '5': lambda: invoke_script('ec2_wizard'),
+        '6': lambda: invoke_script('lambda_wizard'),
         '7': show_logs,
         '8': lambda: print("Exiting ExcaliSweep. Goodbye!")
     }
