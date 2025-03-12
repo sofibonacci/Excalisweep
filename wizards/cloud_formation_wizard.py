@@ -1,8 +1,11 @@
 import boto3, botocore
 import datetime
+from utility import *
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from logger import log_deletion_attempt
 import config
-from utility import *
 
 def list_cloudformation_stacks(): #retrieve and display all cloudformation stacks
     try:
