@@ -2,11 +2,12 @@ import boto3, botocore
 import re
 import inspect
 import json
-import config
-from logger import log_deletion_attempt
-import datetime
 from utility import *
-
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from logger import log_deletion_attempt
+import config
 
 def list_services():  #list all available AWS servicees
     try:
