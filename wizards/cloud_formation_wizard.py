@@ -1,84 +1,132 @@
-import boto3
+import boto3, botocore
 import datetime
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import logger 
-import config 
+from logger import log_deletion_attempt
+import config
+from utility import *
 
-def list_cloudformation_stacks():
+def list_cloudformation_stacks(): #retrieve and display all cloudformation stacks
     try:
-        client = boto3.client('cloudformation') #choose the client (ex. ec2, lambda....)
+        client = boto3.client('cloudformation')
         stacks = {}
-        response = client.list_stacks(StackStatusFilter=['CREATE_COMPLETE', 'UPDATE_COMPLETE']) #retrives a list of the stacks
-        
+        response = client.list_stacks()
+
         for stack in response.get('StackSummaries', []):
-            stacks[stack['StackName']] = {
+            stack_name = stack['StackName']
+            
+            
+            stacks[stack_name] = {
                 'CreationTime': stack['CreationTime'],
                 'StackStatus': stack['StackStatus'],
-                'StackId': stack['StackId']
+                'StackId': stack['StackId'],
             }
         
-        while 'NextToken' in response: #if NextToken is present, there are more stacks to fetch (Pagination Handling)
-            response = client.list_stacks(StackStatusFilter=['CREATE_COMPLETE', 'UPDATE_COMPLETE'], NextToken=response['NextToken'])
+        while 'NextToken' in response: 
+            response = client.list_stacks(NextToken=response['NextToken'])
             for stack in response.get('StackSummaries', []):
-                stacks[stack['StackName']] = {
+                stack_name = stack['StackName']
+                
+                stacks[stack_name] = {
                     'CreationTime': stack['CreationTime'],
                     'StackStatus': stack['StackStatus'],
-                    'StackId': stack['StackId']
+                    'StackId': stack['StackId'],
                 }
         
-        if not stacks:
-            print("\n⚠️ No CloudFormation stacks found.")
-            return None
+        print_list_enumerate(list(stacks.keys()), "CloudFormation Stacks")
+        
+        return stacks if stacks else {}
     
-        return stacks
-    
+    except botocore.exceptions.EndpointConnectionError as e:
+        print(f"❌ Connection error: {e}")
+        return {}
+    except botocore.exceptions.BotoCoreError as e:
+        print(f"❌ AWS BotoCore error: {e}")
+        return {}
+    except boto3.exceptions.Boto3Error as e:
+        print(f"❌ AWS Boto3 error: {e}")
+        return {}
     except Exception as e:
-        print(f"An unexpected error occurred: {str(e)}")
+        print(f"❌ An unexpected error occurred: {e}")
+        return {}
         
         
 
 
-def delete_selected_stacks():
+def delete_selected_stacks(): #delete selected cloudformation stacks
+    print("Waiting for stacks...")
     stacks = list_cloudformation_stacks()  
     
-    if stacks:
+    if not stacks:
+        return
         
-        print("\n All CloudFormation Stacks:")
-        stack_list = list(stacks.keys())
-        for idx, stack in enumerate(stack_list, start=1):
-            status = stacks[stack]['StackStatus']
-            print(f"{idx}. {stack} ({status})")
+    selected_stacks = select_from_list(list(stacks.keys()),
+                                       "Enter the numbers of the stacks you want to delete (comma-separated), or type 'all' to delete all:",
+                                       allow_all=True)
 
-        print("\nEnter the numbers of the stacks you want to delete (comma-separated), or type 'all' to delete all:")
-        choice = input("Your choice: ").strip().lower()
+    if not selected_stacks:
+        print("\n🚫 No valid stacks selected for deletion.")
+        return
 
-        if choice == "all":
-            selected_stacks = stack_list
-        else:
+    confirm = input(f"\n⚠️ Are you sure you want to delete these {len(selected_stacks)} stack(s)? (yes/no): ").strip().lower()
+    
+    if confirm != "yes":
+        print("🚫 Deletion canceled.")
+        return
+    
+    try:
+        cloudformation_client = boto3.client('cloudformation')
+        for stack in selected_stacks:
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             try:
-                indices = [int(i.strip()) - 1 for i in choice.split(",")]
-                selected_stacks = [stack_list[i] for i in indices if 0 <= i < len(stack_list)]
-            except (ValueError, IndexError):
-                print("\n❌ Invalid selection. No stacks deleted.")
-                return
-
-        if not selected_stacks:
-            print("\n🚫 No valid stacks selected for deletion.")
-            return
-
-        confirm = input(f"\n⚠️ Are you sure you want to delete these {len(selected_stacks)} stack(s)? (yes/no): ").strip().lower()
-        if confirm == "yes":
-            cloudformation_client = boto3.client('cloudformation')
-            for stack in selected_stacks:
-                timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                if c.config.delete_for_real == False:
-                    l.log_deletion_attempt(stack, timestamp)
-                    print(f"📝 Logged delete attempt for: {stack}")
-                else:
+                if config.delete_for_real:
                     cloudformation_client.delete_stack(StackName=stack)
-        else:
-            print("🚫 Deletion canceled.")
+                    print(f"✅ Successfully deleted: {stack}")
+                else:
+                    log_deletion_attempt(stack, timestamp,True)
+                    print(f" Logged delete attempt for: {stack}")
             
-delete_selected_stacks()
+            except (botocore.exceptions.EndpointConnectionError, 
+                    botocore.exceptions.BotoCoreError, 
+                    boto3.exceptions.Boto3Error, 
+                    Exception) as e:
+                print(f"❌ Error while deleting {stack}: {e}")
+                log_deletion_attempt(stack, timestamp, False) 
+    
+    except botocore.exceptions.BotoCoreError as e:
+        print(f"❌ General AWS BotoCore error: {e}")
+    except Exception as e:
+        print(f"❌ Unexpected error: {e}")
+            
+def interactive_menu():
+    print("""
+    *****************************************
+    *   Welcome to ExcaliSweep Cloud Formation Wizard!   *
+    *   Your Cloud Formation Stacks Cleanup Assistant   *
+    *****************************************
+""")
+
+    while True:
+        #add choice to show logs
+        print("\nMain Menu:")
+        print("1. List Cloud Formation Stacks and Status")
+        print("2. Delete Stacks")
+        print("3. Exit")
+        choice = input("Enter your choice: ").strip()
+
+        if choice == "1":
+            print("Waiting for stacks...")
+            buckets = list_cloudformation_stacks()
+        
+        elif choice == "2":
+            delete_selected_stacks()
+
+        elif choice == "3":
+            print("\n🔚 Exiting Excalisweep CloudFormation Wizard. Have a great day!")
+            break
+        
+        else:
+            print("\nInvalid choice. Please enter 1, 2, or 3.")
+
+if __name__ == "__main__":
+    interactive_menu()
+
+            
