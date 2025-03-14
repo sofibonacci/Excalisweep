@@ -88,7 +88,8 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         print(f"\nExecuting {service_name}.{method_name}()...")
         #if config.delete_for_real:
         response = method(**params_dict)
-        print("\nResponse:", response)
+        print_list_enumerate(list(response.keys()),"Response: ")
+        print(response
     except Exception as e:
         print(f"Error executing method: {e}")
 
