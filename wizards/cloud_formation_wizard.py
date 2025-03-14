@@ -78,13 +78,13 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
     try:
         cloudformation_client = boto3.client('cloudformation')
         for stack in selected_stacks:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
             try:
                 if config.delete_for_real:
                     cloudformation_client.delete_stack(StackName=stack)
                     print(f"✅ Successfully deleted: {stack}")
                 else:
-                    log_deletion_attempt(stack, timestamp,True)
+                    log_deletion_attempt(stack, "CloudFormation",True)
                     print(f" Logged delete attempt for: {stack}")
             
             except (botocore.exceptions.EndpointConnectionError, 
@@ -92,7 +92,7 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
                     boto3.exceptions.Boto3Error, 
                     Exception) as e:
                 print(f"❌ Error while deleting {stack}: {e}")
-                log_deletion_attempt(stack, timestamp, False) 
+                log_deletion_attempt(stack, "CloudFormation", False) 
     
     except botocore.exceptions.BotoCoreError as e:
         print(f"❌ General AWS BotoCore error: {e}")
