@@ -47,7 +47,7 @@ def list_cloudformation_stacks(): #retrieve and display all cloudformation stack
                 stacks[stack_name]['Description'] = 'Error retrieving description'
         
         
-        print_list_enumerate(list(stacks.keys()), "CloudFormation Stacks")
+        print_list_enumerate(stacks, "CloudFormation Stacks")
         
         return stacks if stacks else {}
     
@@ -75,7 +75,7 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
         return
         
     selected_stacks = select_from_list(list(stacks.keys()),
-                                       "Enter the numbers of the stacks you want to delete (comma-separated), or type 'all' to delete all:")
+                                       "Enter the numbers of the stacks you want to delete (comma-separated), or type 'all' to delete all:",)
 
     if not selected_stacks:
         print("\n🚫 No valid stacks selected for deletion.")
