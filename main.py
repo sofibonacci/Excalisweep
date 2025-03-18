@@ -3,6 +3,7 @@ import os
 import subprocess
 from datetime import datetime, timedelta
 from config import *
+import requests
 
 def show_intro():
     print("""
@@ -13,6 +14,20 @@ def show_intro():
     """)
     print("Warning: The resources displayed are based on your current Availability Zone (AZ) and Region. If you're unable to find what you're looking for, try switching to a different AZ or Region."       )
     print(f'Warning: The current variable for real deletion is set on {delete_for_real}. Either way, be careful!')
+
+def get_region():
+    """Get current AWS region."""
+    session = boto3.session.Session()
+    return session.region_name
+
+def get_availability_zone():
+    """Get AZ if executed on an EC2 instance."""
+    try:
+        response = requests.get("http://169.254.169.254/latest/meta-data/placement/availability-zone", timeout=2)
+        return response.text
+    except requests.RequestException:
+        return "Not available (outside EC2)"
+
 def list_billed_services():
     """Retrieve AWS services that incurred costs in the last specified number of days on config.py."""
     try:
@@ -40,12 +55,17 @@ def list_billed_services():
 def show_billed_services():
     """Display AWS services that have incurred costs in the last specified number of days."""
     print(f"\nAWS Services with costs in the last {days_to_observe} days:")
+    region = get_region()
+    az = get_availability_zone()
+    print(f"📍 Region: {region}")
+    print(f"🏠 Availability Zone: {az}\n")
+
     services = list_billed_services()
     if not services:
-        print("  No services with costs found.")
-    else:
+        print("No services with costs found.")
+    else: 
         for service, cost in sorted(services.items(), key=lambda x: x[1], reverse=True):
-            print(f"  {service}: ${cost:.2f}")
+            print(f" {service}: ${cost:.2f} (Region: {region}, AZ: {az})")
 
 def invoke_script(script_name):
     """Execute a cleanup wizard script safely."""
