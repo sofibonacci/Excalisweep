@@ -13,8 +13,12 @@ def print_list_enumerate(response, title): #function to print enumerated lists
     elif isinstance(response, dict):        
         for i, (key, value) in enumerate(response.items(), start=1):
             print(f"{i}. {key}")
-            for sub_key, sub_value in value.items():
-                print(f"   - {sub_key}: {sub_value}")
+            if isinstance(value,list):
+                for item in value:
+                    print(f"{i}. {item}")
+            elif isinstance(value,dict):
+                for sub_key, sub_value in value.items():
+                    print(f"   - {sub_key}: {sub_value}")
 
 def select_from_list(item_list, prompt_message, allow_all=True): # function to select one or multiple items from a list
     """
