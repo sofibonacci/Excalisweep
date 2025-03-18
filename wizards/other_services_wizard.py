@@ -88,7 +88,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         print(f"\nExecuting {service_name}.{method_name}()...")
         delete=print(any(word in method_name.lower() for word in ["delete", "terminate", "remove", "drop", "destroy", "purge"]))
         print(delete)
-        if {"delete", "terminate", "remove", "drop", "destroy", "purge"} in  method_name.lower():
+        if delete:
             if config.delete_for_real:
                 response = method(**params_dict)
                 log_deletion_attempt(params_dict, service_name,True)
