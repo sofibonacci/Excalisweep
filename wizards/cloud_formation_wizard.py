@@ -33,6 +33,18 @@ def list_cloudformation_stacks(): #retrieve and display all cloudformation stack
                     'StackStatus': stack['StackStatus'],
                     'StackId': stack['StackId'],
                 }
+        for stack_name in stacks.keys():
+            try:
+                stack_details = client.describe_stacks(StackName=stack_name)['Stacks'][0]
+                stacks[stack_name]['Description'] = stack_details.get('Description', 'No description provided')
+                stacks[stack_name]['Parameters'] = {
+                    param['ParameterKey']: param.get('ParameterValue', 'No value provided')
+                    for param in stack_details.get('Parameters', [])
+                }
+            except botocore.exceptions.BotoCoreError as e:
+                print(f"⚠️ Could not retrieve description for stack {stack_name}: {e}")
+                stacks[stack_name]['Description'] = 'Error retrieving description'
+        
         
         print_list_enumerate(list(stacks.keys()), "CloudFormation Stacks")
         
