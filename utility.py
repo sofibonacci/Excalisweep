@@ -10,7 +10,7 @@ def print_list_enumerate(response, title): #function to print enumerated lists
         print(f"{i}. {item}")
 
 
-def select_from_list(item_list, prompt_message, allow_all=False): # function to select one or multiple items from a list
+def select_from_list(item_list, prompt_message, allow_all=True): # function to select one or multiple items from a list
     """
     allow_all:
         * `False` -> Select only one item.

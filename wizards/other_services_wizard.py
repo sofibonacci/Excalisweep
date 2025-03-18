@@ -53,7 +53,7 @@ def choose_method():  #choose a service and a method to execute
         return
     
     methods = list_all_methods(service)
-    chosen_method = select_from_list(methods, "Choose a method to use by index")
+    chosen_method = select_from_list(methods, "Choose a method to use by index", False)
     
     if chosen_method:
         execute_method(service, chosen_method[0])
@@ -86,10 +86,18 @@ def execute_method(service_name, method_name): #execute the method u choose (and
             params_dict = {}
         
         print(f"\nExecuting {service_name}.{method_name}()...")
-        #if config.delete_for_real:
-        response = method(**params_dict)
-        print_list_enumerate(list(response.keys()),"Response: ")
-        print(response)
+        if method_name.lower() in {"delete", "terminate", "remove", "drop", "destroy", "purge"}:
+            if config.delete_for_real:
+                response = method(**params_dict)
+                print_list_enumerate(list(response.keys()),"Response: ")
+                print(response)
+            else:
+                log_deletion_attempt(params_dict, service_name,True)
+        else:
+                response = method(**params_dict)
+                print_list_enumerate(list(response.keys()),"Response: ")
+                print(response)
+            
     except Exception as e:
         print(f"Error executing method: {e}")
 

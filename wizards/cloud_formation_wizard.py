@@ -15,34 +15,35 @@ def list_cloudformation_stacks(): #retrieve and display all cloudformation stack
 
         for stack in response.get('StackSummaries', []):
             stack_name = stack['StackName']
-            
+            stack_status = stack['StackStatus']
             
             stacks[stack_name] = {
                 'CreationTime': stack['CreationTime'],
-                'StackStatus': stack['StackStatus'],
+                'StackStatus': stack_status,
                 'StackId': stack['StackId'],
+                'Description': 'No description retrieved (deleted stack)' if stack_status == 'DELETE_COMPLETE' else None
             }
         
         while 'NextToken' in response: 
             response = client.list_stacks(NextToken=response['NextToken'])
             for stack in response.get('StackSummaries', []):
                 stack_name = stack['StackName']
+                stack_status = stack['StackStatus']
                 
                 stacks[stack_name] = {
                     'CreationTime': stack['CreationTime'],
                     'StackStatus': stack['StackStatus'],
                     'StackId': stack['StackId'],
+                'Description': 'No description retrieved (deleted stack)' if stack_status == 'DELETE_COMPLETE' else None
                 }
-        for stack_name in stacks.keys():
+                
+        for stack_name, stack_info in stacks.items():
             try:
-                stack_details = client.describe_stacks(StackName=stack_name)['Stacks'][0]
-                stacks[stack_name]['Description'] = stack_details.get('Description', 'No description provided')
-                stacks[stack_name]['Parameters'] = {
-                    param['ParameterKey']: param.get('ParameterValue', 'No value provided')
-                    for param in stack_details.get('Parameters', [])
-                }
-            except botocore.exceptions.BotoCoreError as e:
-                print(f"⚠️ Could not retrieve description for stack {stack_name}: {e}")
+                if stack_info['StackStatus'] != 'DELETE_COMPLETE':
+                    stack_details = client.describe_stacks(StackName=stack_name)['Stacks'][0]
+                    stacks[stack_name]['Description'] = stack_details.get('Description', 'No description provided')
+            except botocore.exceptions.ClientError as e:
+                print(f"⚠️ No se pudo obtener la descripción de {stack_name}: {e}")
                 stacks[stack_name]['Description'] = 'Error retrieving description'
         
         
@@ -74,8 +75,7 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
         return
         
     selected_stacks = select_from_list(list(stacks.keys()),
-                                       "Enter the numbers of the stacks you want to delete (comma-separated), or type 'all' to delete all:",
-                                       allow_all=True)
+                                       "Enter the numbers of the stacks you want to delete (comma-separated), or type 'all' to delete all:")
 
     if not selected_stacks:
         print("\n🚫 No valid stacks selected for deletion.")
@@ -94,6 +94,7 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
             try:
                 if config.delete_for_real:
                     cloudformation_client.delete_stack(StackName=stack)
+                    log_deletion_attempt(stack, "CloudFormation",True)
                     print(f"✅ Successfully deleted: {stack}")
                 else:
                     log_deletion_attempt(stack, "CloudFormation",True)
