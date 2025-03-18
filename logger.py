@@ -15,7 +15,7 @@ def log_deletion_attempt(service_name, resource_name, success):
     
     # Determine status
     if config.delete_for_real:
-        status = "SUCCESSFUL" if success else "FAILED"
+        status = "SUCCESFULLY DELETED" if success else "DELETION FAILED"
     else:
         status = "TESTING"
     
