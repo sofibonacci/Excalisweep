@@ -115,7 +115,7 @@ def delete_selected_buckets():
                 else:
                     print(f"Failed to empty bucket {bucket}. Skipping deletion.")
             else:
-                l.log_deletion_attempt(bucket, "S3", True)
+                logger.log_deletion_attempt(bucket, "S3", True)
                 print(f"Logged delete attempt for: {bucket}")
     else:
         print("Deletion canceled.")
