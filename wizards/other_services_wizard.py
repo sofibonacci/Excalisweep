@@ -89,14 +89,15 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         if method_name.lower() in {"delete", "terminate", "remove", "drop", "destroy", "purge"}:
             if config.delete_for_real:
                 response = method(**params_dict)
-                print_list_enumerate(list(response.keys()),"Response: ")
-                print(response)
+                log_deletion_attempt(params_dict, service_name,True)
             else:
                 log_deletion_attempt(params_dict, service_name,True)
+                return
         else:
                 response = method(**params_dict)
-                print_list_enumerate(list(response.keys()),"Response: ")
-                print(response)
+        print_list_enumerate(response,"Response: ")
+                
+                
             
     except Exception as e:
         print(f"Error executing method: {e}")
