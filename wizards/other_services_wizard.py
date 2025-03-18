@@ -95,7 +95,6 @@ def execute_method(service_name, method_name): #execute the method u choose (and
                 return
         else:
                 response = method(**params_dict)
-                print(response)
         print_list_enumerate(response,"Response: ")
                 
                 
