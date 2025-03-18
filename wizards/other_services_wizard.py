@@ -94,7 +94,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
                 log_deletion_attempt(params_dict, service_name,True)
             else:
                 log_deletion_attempt(params_dict, service_name,True)
-                print(f" Logged delete attempt for: {params_dict
+                print(f" Logged delete attempt for: {params_dict}")
                 return
         else:
                 response = method(**params_dict)
