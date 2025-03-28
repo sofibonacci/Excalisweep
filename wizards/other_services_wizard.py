@@ -73,8 +73,10 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         
         print(f"\nMethod: {method_name}")
         print(f"\nDescription:\n{docstring[0]} \nResponse Syntax: {match[0]}\n" if docstring else "\nNo description available.\n")
-        print(f"Required Params -->\n{'\n'.join(matches)}" if matches else "No required parameters found.")        
-        
+        params = '\n'.join(matches) if matches else "No required parameters found."
+        print(f"Required Params -->\n{params}")
+    
+    
         if required_params:
             params = input('Enter parameters as a JSON string (ex. : {"key": "value"}): ').strip() 
             params_dict = {}
