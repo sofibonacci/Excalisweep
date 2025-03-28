@@ -65,20 +65,26 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         method = getattr(client, method_name)
         signature = inspect.signature(method)
         docstring = inspect.getdoc(method).split('\n')
+        
+        #regex
         pattern_response = r'(\bresponse\s*=\s*client\.[\w_]+\([^)]*\))'
         pattern_params = r':param (\w+):\s+\*\*\[REQUIRED\]\*\*'
+        
+        #regex matches
         matches = re.findall(pattern_params, inspect.getdoc(method))
         match = re.findall(pattern_response, inspect.getdoc(method))
+        
         required_params = [param for param, details in signature.parameters.items() if details.default == inspect.Parameter.empty]
         
         print(f"\nMethod: {method_name}")
-        print(f"\nDescription:\n{docstring[0]} \nResponse Syntax: {match[0]}\n" if docstring else "\nNo description available.\n")
+        print(f"\nDescription:\n{docstring[0]}" if docstring else "\nNo description available.\n")
+        print(f"\nResponse Syntax: {match[0]}\n" if match else "\nNo response syntax available.\n")
         params = '\n'.join(matches) if matches else "No required parameters found."
-        print(f"Required Params --> {params}")
+        print(f"Required Params --> {params}\n")
     
     
         if required_params:
-            params = input('Enter parameters as a JSON string (ex. : {"key": "value"}): ').strip() 
+            params = input('\nEnter parameters as a JSON string (ex. {"key": "value"}): ').strip()
             params_dict = {}
             if params:
                 try:
@@ -87,7 +93,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
                     print("\n❌ Invalid JSON format. Aborting execution.")
                     return
         else:
-            params_dict = {}
+            print("\nNo required parameters needed.")
         
         print(f"\nExecuting {service_name}.{method_name}()...")
         delete=any(word in method_name.lower() for word in ["delete", "terminate", "remove", "drop", "destroy", "purge"])
