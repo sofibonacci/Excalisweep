@@ -13,7 +13,7 @@ def list_services():  #list all available AWS servicees
     try:
         session = boto3.Session()
         services  = session.get_available_services()
-        print_list_enumerate(services, "Available AWS services")
+        print_list_enumerate(services, "Available AWS services",False)
         return services 
         
     except botocore.exceptions.BotoCoreError as e:

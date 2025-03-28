@@ -1,6 +1,6 @@
 ###########use in all wizards##########
 
-def print_list_enumerate(response, title, indent=0, enumerate_keys=True):  
+def print_list_enumerate(response, title, enumerate_keys=True, indent=0):  
     if not response:
         print(f"\nNo {title} found.")
         return
@@ -19,7 +19,7 @@ def print_list_enumerate(response, title, indent=0, enumerate_keys=True):
 
             if isinstance(item, (dict, list)):
                 print()
-                print_list_enumerate(item, title, indent + 1, enumerate_keys)  
+                print_list_enumerate(item, title, enumerate_keys, indent + 1)  
             else:
                 print(item)
 
@@ -31,7 +31,7 @@ def print_list_enumerate(response, title, indent=0, enumerate_keys=True):
                 print(f"{prefix}- {key}")
 
             if isinstance(value, (list, dict)):
-                print_list_enumerate(value, title, indent + 1, enumerate_keys)  
+                print_list_enumerate(value, title,  enumerate_keys, indent + 1)  
             else:
                 print(f"{prefix}   - {value}")
 
