@@ -65,13 +65,15 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         method = getattr(client, method_name)
         signature = inspect.signature(method)
         docstring = inspect.getdoc(method).split('\n')
-        print(docstring)
-        pattern = r'(\bresponse\s*=\s*client\.[\w_]+\([^)]*\))'
-        match = re.findall(pattern, inspect.getdoc(method))
+        pattern_response = r'(\bresponse\s*=\s*client\.[\w_]+\([^)]*\))'
+        pattern_params = r':param (\w+):\s+\*\*\[REQUIRED\]\*\*'
+        matches = re.findall(pattern_params, inspect.getdoc(method))
+        match = re.findall(pattern_response, inspect.getdoc(method))
         required_params = [param for param, details in signature.parameters.items() if details.default == inspect.Parameter.empty]
         
         print(f"\nMethod: {method_name}")
         print(f"\nDescription:\n{docstring[0]} \nResponse Syntax: {match[0]}\n" if docstring else "\nNo description available.\n")
+        print(f"Required Params --> {required_params}" if required_params else "No required parameters found.")
         
         
         if required_params:
