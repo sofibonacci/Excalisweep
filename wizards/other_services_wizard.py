@@ -90,7 +90,6 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         
         print(f"\nExecuting {service_name}.{method_name}()...")
         delete=any(word in method_name.lower() for word in ["delete", "terminate", "remove", "drop", "destroy", "purge"])
-        print(delete)
         if delete:
             if config.delete_for_real:
                 response = method(**params_dict)
