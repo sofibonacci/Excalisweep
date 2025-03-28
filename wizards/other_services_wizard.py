@@ -74,7 +74,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         print(f"\nMethod: {method_name}")
         print(f"\nDescription:\n{docstring[0]} \nResponse Syntax: {match[0]}\n" if docstring else "\nNo description available.\n")
         params = '\n'.join(matches) if matches else "No required parameters found."
-        print(f"Required Params -->\n{params}")
+        print(f"Required Params --> {params}")
     
     
         if required_params:
