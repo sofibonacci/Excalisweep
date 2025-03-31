@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timezone
 import config
 
-def log_deletion_attempt(service_name, resource_name, success):
+def log_action(service_name, resource_name, success, mode="deletion", function_name=None, json_input=None, response_json=None):
     log_file_path = "excalisweep.logs"
     
     # Ensure the file exists
@@ -14,11 +14,20 @@ def log_deletion_attempt(service_name, resource_name, success):
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S (UTC +0)")
     
     # Determine status
-    if config.delete_for_real:
-        status = "SUCCESSFUL" if success else "FAILED"
+    if mode in ["deletion", "request"]:
+        if config.delete_for_real:
+            if mode == "deletion":
+                status = "SUCCESFULLY DELETED" if success else "DELETION FAILED"
+            elif mode == "request":
+                status = "SUCCESFULLY REQUESTED DELETION" if success else "FAILED REQUESTED DELETION"
+            else:
+                status = "UNKNOWN ACTION"
+        else:
+            status = "TESTING"
+        log_entry = f"{timestamp} | {service_name} | {resource_name} | {status}\n"
     else:
-        status = "TESTING"
+        log_entry = f"{timestamp} | {service_name} | {resource_name} | {function_name} | {json_input} | {response_json}\n"
     
     # Write log entry
     with open(log_file_path, "a") as log_file:
-        log_file.write(f"{timestamp} | {service_name} | {resource_name} | {status}\n")
+        log_file.write(log_entry)
