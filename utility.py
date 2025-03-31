@@ -12,30 +12,30 @@ def print_list_enumerate(response, title, enumerate_keys=True, indent=0):
 
     if isinstance(response, list):
         for i, item in enumerate(response, start=1) if enumerate_keys else enumerate(response, start=0):
-            if enumerate_keys and indent == 0:  # Numeración solo para el primer nivel
+            if enumerate_keys and indent == 0:  
                 print(f"{prefix}{i}. ", end="")
             else:
                 print(prefix, end="")
 
-            # Llamada recursiva que manejará sublistas y subdiccionarios
+            
             if isinstance(item, (dict, list)):
-                print()  # Imprimir salto de línea antes de la llamada recursiva
+                print()  
                 print_list_enumerate(item, title, enumerate_keys, indent + 1)
             else:
                 print(item)
 
     elif isinstance(response, dict):
         for i, (key, value) in enumerate(response.items(), start=1) if enumerate_keys else response.items():
-            if enumerate_keys and indent == 0:  # Numeración solo para el primer nivel
+            if enumerate_keys and indent == 0:  
                 print(f"{prefix}{i}. {key}")
             else:
                 print(f"{prefix}- {key}")
 
-            # Llamada recursiva para procesar valores que son listas o diccionarios
+           
             if isinstance(value, (list, dict)):
                 print_list_enumerate(value, title, enumerate_keys, indent + 1)
             else:
-                print(f"{prefix}   - {value}")
+                print(f"{prefix}{value}")
 
 
 def select_from_list(item_list, prompt_message, allow_all=True): # function to select one or multiple items from a list
