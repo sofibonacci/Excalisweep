@@ -77,7 +77,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         required_params = [param for param, details in signature.parameters.items() if details.default == inspect.Parameter.empty]
         
         print(f"\nMethod: {method_name}")
-        print(f"\nDescription:\n{docstring[0]}" if docstring else "\nNo description available.\n")
+        print(f"\nDescription:{docstring[0]}\n" if docstring else "No description available.\n")
         print(f"\nResponse Syntax: {match[0]}\n" if match else "\nNo response syntax available.\n")
         params = '\n'.join(matches) if matches else "No required parameters found."
         print(f"Required Params --> {params}\n")
@@ -99,20 +99,28 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         delete=any(word in method_name.lower() for word in ["delete", "terminate", "remove", "drop", "destroy", "purge"])
         if delete:
             if config.delete_for_real:
-                response = method(**params_dict)
-                log_deletion_attempt(params_dict, service_name,True)
+                try:
+                    response = method(**params_dict)
+                    log_deletion_attempt(params_dict, service_name,True)
+                except Exception as e:
+                    print(f"Error executing method: {e}")
+                    log_deletion_attempt(params_dict, service_name,False)
             else:
                 log_deletion_attempt(params_dict, service_name,True)
                 print(f" Logged delete attempt for: {params_dict}")
                 return
         else:
+            try:
                 response = method(**params_dict)
+            except Exception as e:
+                    print(f"Error executing method: {e}")  
+                    
         print_list_enumerate(response,"Response: ")
                 
                 
             
     except Exception as e:
-        print(f"Error executing method: {e}")
+        print(f"{e}")
 
 
 def interactive_menu():  # Interactive menu for user interaction
