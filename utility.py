@@ -29,13 +29,13 @@ def print_list_enumerate(response, title, enumerate_keys=True, indent=0):
             if enumerate_keys and indent == 0:  
                 print(f"{prefix}{i}. {key}")
             else:
-                print(f"{prefix}  {key}")
+                print(f"{prefix}- {key}")
 
-           
+            
             if isinstance(value, (list, dict)):
                 print_list_enumerate(value, title, enumerate_keys, indent + 1)
             else:
-                print(f"{prefix}    {value}")
+                print(f"{prefix}   - {value}")
 
 
 def select_from_list(item_list, prompt_message, allow_all=True): # function to select one or multiple items from a list
