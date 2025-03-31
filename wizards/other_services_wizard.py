@@ -115,6 +115,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
             except Exception as e:
                     print(f"Error executing method: {e}")  
         
+        print(response, response["ResponseMetadata"]["HTTPStatusCode"])
         if response["ResponseMetadata"]["HTTPStatusCode"]== 200:
             for key in response.keys():
                 if key!="ResponseMetadata":
