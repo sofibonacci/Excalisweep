@@ -15,10 +15,24 @@ def show_intro():
     print("Warning: The resources displayed are based on your current Availability Zone (AZ) and Region. If you're unable to find what you're looking for, try switching to a different AZ or Region."       )
     print(f'Warning: The current variable for real deletion is set on {delete_for_real}. Either way, be careful!')
 
+    region = get_region()
+    az = get_availability_zone()
+    print(f"📍 Region: {region}")
+    print(f"🏠 Availability Zone: {az}\n")
+
 def get_region():
-    """Get current AWS region."""
+    """Get current AWS region from boto3 session, or fallback to instance metadata."""
     session = boto3.session.Session()
-    return session.region_name
+    region = session.region_name
+    if region:
+        return region
+
+    # Fallback: Extract region from AZ if running on EC2
+    az = get_availability_zone()
+    if az and len(az) > 1:
+        return az[:-1]  # Remove last character (AZ letter) to get the region
+    
+    return "Region not available"
 
 def get_availability_zone():
     """Get AZ if executed on an EC2 instance."""
@@ -55,17 +69,13 @@ def list_billed_services():
 def show_billed_services():
     """Display AWS services that have incurred costs in the last specified number of days."""
     print(f"\nAWS Services with costs in the last {days_to_observe} days:")
-    region = get_region()
-    az = get_availability_zone()
-    print(f"📍 Region: {region}")
-    print(f"🏠 Availability Zone: {az}\n")
 
     services = list_billed_services()
     if not services:
         print("No services with costs found.")
     else: 
         for service, cost in sorted(services.items(), key=lambda x: x[1], reverse=True):
-            print(f" {service}: ${cost:.2f} (Region: {region}, AZ: {az})")
+            print(f" {service}: ${cost:.2f}")
 
 def invoke_script(script_name):
     """Execute a cleanup wizard script safely."""
