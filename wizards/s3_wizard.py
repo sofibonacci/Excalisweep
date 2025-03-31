@@ -63,6 +63,7 @@ def empty_bucket(bucket_name):
     except Exception as e:
         print(f"Error emptying bucket {bucket_name}: {str(e)}")
         log_action("S3", bucket_name, False, mode="deletion")
+
         return False
 
     return True
@@ -109,12 +110,15 @@ def delete_selected_buckets():
                     try:
                         s3_client.delete_bucket(Bucket=bucket)
                         print(f"Successfully deleted: {bucket}")
+                        logger.log_deletion_attempt(bucket, "S3", True)
                     except Exception as e:
                         print(f"Failed to delete {bucket}: {str(e)}")
                         log_action("S3", bucket, False, mode="deletion")
                 else:
                     print(f"Failed to empty bucket {bucket}. Skipping deletion.")
+                    logger.log_deletion_attempt(bucket, "S3", False)
             else:
+
                 log_action("S3", bucket, True, mode="deletion")
                 print(f"Logged delete attempt for: {bucket}")
     else:

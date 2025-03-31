@@ -24,6 +24,7 @@ log_action(
 )
 """
 
+
 def list_services():  #list all available AWS servicees
     try:
         session = boto3.Session()

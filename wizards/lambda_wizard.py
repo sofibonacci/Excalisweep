@@ -95,8 +95,10 @@ def delete_selected_lambda_functions():
                 # Delete the function and its resources
                 if delete_lambda_function(function, lambda_client):
                     print(f"Successfully deleted Lambda function and resources: {function}")
+                    logger.log_deletion_attempt(function_name, "Lambda", True)
                 else:
                     print(f"Failed to delete Lambda function: {function}. Skipping.")
+                    logger.log_deletion_attempt(function_name, "Lambda", False)
             else:
                 log_action("Lambda", function, True, mode="deletion")
 

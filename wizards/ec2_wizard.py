@@ -69,6 +69,7 @@ def terminate_selected_instances():
                 try:
                     ec2_client.terminate_instances(InstanceIds=[instance])
                     print(f"Successfully terminated: {instance}")
+                    logger.log_deletion_attempt(instance, "EC2", True)
                 except Exception as e:
                     print(f"Failed to terminate {instance}: {str(e)}")
                     log_action("EC2", instance, False, mode="deletion")
