@@ -3,7 +3,7 @@ import datetime
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import logger 
+from logger import log_action
 import config 
 
 def list_ec2_instances():
@@ -69,11 +69,12 @@ def terminate_selected_instances():
                 try:
                     ec2_client.terminate_instances(InstanceIds=[instance])
                     print(f"Successfully terminated: {instance}")
+                    logger.log_deletion_attempt(instance, "EC2", True)
                 except Exception as e:
                     print(f"Failed to terminate {instance}: {str(e)}")
-                    logger.log_deletion_attempt(instance, "EC2", False)
+                    log_action("EC2", instance, False, mode="deletion")
             else:
-                logger.log_deletion_attempt(instance, "EC2", True)
+                log_action("EC2", instance, True, mode="deletion")
                 print(f"Logged terminate attempt for: {instance}")
     else:
         print("Termination canceled.")

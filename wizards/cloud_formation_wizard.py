@@ -4,7 +4,8 @@ from utility import *
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from logger import log_deletion_attempt
+
+from logger import log_action
 import config
 
 def list_cloudformation_stacks(): #retrieve and display all cloudformation stacks
@@ -122,7 +123,7 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
                         print(f"⚠️ Deletion attempt failed for {stack}. It might have dependencies.")
                         log_deletion_attempt(stack, "CloudFormation", False)
                 else:
-                    log_deletion_attempt(stack, "CloudFormation",True)
+                    log_action("Cloud Formation", stack, True, mode="request")
                     print(f" Logged delete attempt for: {stack}")
             
             except (botocore.exceptions.EndpointConnectionError, 
@@ -130,7 +131,7 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
                     boto3.exceptions.Boto3Error, 
                     Exception) as e:
                 print(f"❌ Error while deleting {stack}: {e}")
-                log_deletion_attempt(stack, "CloudFormation", False) 
+                log_action("Cloud Formation", stack, False, mode="request")
     
     except botocore.exceptions.BotoCoreError as e:
         print(f"❌ General AWS BotoCore error: {e}")

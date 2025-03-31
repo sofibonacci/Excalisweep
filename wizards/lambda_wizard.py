@@ -3,7 +3,7 @@ import datetime
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-import logger 
+from logger import log_action
 import config 
 
 def list_lambda_functions():
@@ -28,7 +28,7 @@ def list_lambda_functions():
             }
         except Exception as e:
             print(f"Error fetching details for Lambda function {function_name}: {str(e)}")
-            logger.log_deletion_attempt(function_name, "Lambda", False)
+            log_action("Lambda", function_name, False, mode="deletion")
     
     return functions
 
@@ -53,7 +53,7 @@ def delete_lambda_function(function_name, lambda_client):
         return True
     except Exception as e:
         print(f"Error deleting Lambda function {function_name}: {str(e)}")
-        logger.log_deletion_attempt(function_name, "Lambda", False)
+        log_action("Lambda", function_name, False, mode="deletion")
         return False
 
 def delete_selected_lambda_functions():
@@ -95,10 +95,13 @@ def delete_selected_lambda_functions():
                 # Delete the function and its resources
                 if delete_lambda_function(function, lambda_client):
                     print(f"Successfully deleted Lambda function and resources: {function}")
+                    logger.log_deletion_attempt(function_name, "Lambda", True)
                 else:
                     print(f"Failed to delete Lambda function: {function}. Skipping.")
+                    logger.log_deletion_attempt(function_name, "Lambda", False)
             else:
-                logger.log_deletion_attempt(function, "Lambda", True)
+                log_action("Lambda", function, True, mode="deletion")
+
                 print(f"Logged delete attempt for: {function}")
     else:
         print("Deletion canceled.")
