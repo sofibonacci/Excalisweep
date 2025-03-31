@@ -115,12 +115,17 @@ def execute_method(service_name, method_name): #execute the method u choose (and
             except Exception as e:
                     print(f"Error executing method: {e}")  
         
-        print(type(response), response.keys())            
-        print_list_enumerate(response,"Response: ")
+        
+        for item in response.keys():
+            print(item)
+        if response["ResponseMetadata"]["HTTPStatusCode"]== 200:
+            print_list_enumerate(response,"Response: ")
+        else: 
+            print(response["ResponseMetadata"])
+            
         print(response)
                 
-                
-            
+           
     except Exception as e:
         print(f"{e}")
 
