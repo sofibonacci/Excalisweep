@@ -95,7 +95,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         else:
             print("\nNo required parameters needed.")
         
-        print(f"\nExecuting {service_name}.{method_name}()...")
+        print(f"\nExecuting {service_name}.{method_name}()...\n")
         delete=any(word in method_name.lower() for word in ["delete", "terminate", "remove", "drop", "destroy", "purge"])
         if delete:
             if config.delete_for_real:
@@ -122,7 +122,6 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         else: 
             print(response["ResponseMetadata"])
             
-        print(response)
                 
            
     except Exception as e:
