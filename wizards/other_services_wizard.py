@@ -114,7 +114,8 @@ def execute_method(service_name, method_name): #execute the method u choose (and
                 response = method(**params_dict)
             except Exception as e:
                     print(f"Error executing method: {e}")  
-                    
+        
+        print(type(response), response.keys())            
         print_list_enumerate(response,"Response: ")
         print(response)
                 
