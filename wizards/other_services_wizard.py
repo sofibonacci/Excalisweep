@@ -118,8 +118,9 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         print(response, response["ResponseMetadata"]["HTTPStatusCode"])
         if response["ResponseMetadata"]["HTTPStatusCode"] == 200:  
             del response["ResponseMetadata"]
-            print_list_enumerate(response,"Response ")
+            print_list_enumerate(response,"Response")
         else: 
+            print(f"Failed with status code: {response["ResponseMetadata"]["HTTPStatusCode"]}.")
             print(response["ResponseMetadata"])
             
                 
