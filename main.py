@@ -26,21 +26,24 @@ def get_region():
     region = session.region_name
     if region:
         return region
-
-    # Fallback: Extract region from AZ if running on EC2
-    az = get_availability_zone()
-    if az and len(az) > 1:
-        return az[:-1]  # Remove last character (AZ letter) to get the region
-    
-    return "Region not available"
+    else:
+        raise Exception("Region not available")
 
 def get_availability_zone():
-    """Get AZ if executed on an EC2 instance."""
+    """Get AZ using AWS IMDSv2 if running on EC2."""
     try:
-        response = requests.get("http://169.254.169.254/latest/meta-data/placement/availability-zone", timeout=2)
+        # Getting the token 
+        token_url = "http://169.254.169.254/latest/api/token"
+        headers = {"X-aws-ec2-metadata-token-ttl-seconds": "21600"}
+        token = requests.put(token_url, headers=headers, timeout=2).text
+
+        # Using that token to get the AZ
+        metadata_url = "http://169.254.169.254/latest/meta-data/placement/availability-zone"
+        headers = {"X-aws-ec2-metadata-token": token}
+        response = requests.get(metadata_url, headers=headers, timeout=2)
         return response.text
     except requests.RequestException:
-        return "Not available (outside EC2)"
+        return "Not available (outside EC2 or IMDSv2 required)"
 
 def list_billed_services():
     """Retrieve AWS services that incurred costs in the last specified number of days on config.py."""
