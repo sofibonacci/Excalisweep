@@ -1,41 +1,56 @@
 ###########use in all wizards##########
 
-def print_list_enumerate(response, title, enumerate_keys=True, indent=0):  
+def print_list_enumerate(response, title, enumerate_keys=True, indent=0):
+    # Check if the response is empty
     if not response:
         print(f"\nNo {title} found.")
         return
 
-    prefix = "  " * indent  
+    # Prefix for indentation
+    prefix = "  " * indent
 
-    if indent == 0:  
+    # Print the title only once
+    if indent == 0:
         print(f"\n{title}:")
 
+    # If the response is a list, process it
     if isinstance(response, list):
-        for i, item in enumerate(response, start=1) if enumerate_keys else enumerate(response, start=0):
-            if enumerate_keys and indent == 0:  
-                print(f"{prefix}{i}. ", end="")
-            else:
-                print(prefix, end="")
+        _print_list(response, enumerate_keys, prefix, indent)
 
-            
-            if isinstance(item, (dict, list)):
-                print()  
-                print_list_enumerate(item, title, enumerate_keys, indent + 1)
-            else:
-                print(item)
-
+    # If the response is a dictionary, process its keys and values
     elif isinstance(response, dict):
-        for i, (key, value) in enumerate(response.items(), start=1) if enumerate_keys else response.items():
-            if enumerate_keys and indent == 0:  
-                print(f"{prefix}{i}. {key}")
-            else:
-                print(f"{prefix}- {key}")
+        _print_dict(response, enumerate_keys, prefix, indent)
 
-            
-            if isinstance(value, (list, dict)):
-                print_list_enumerate(value, title, enumerate_keys, indent + 1)
-            else:
-                print(f"{prefix}   - {value}")
+
+def _print_list(response, enumerate_keys, prefix, indent):
+    """Handles printing when the response is a list, without recursion."""
+    for i, item in enumerate(response, start=1):
+        if enumerate_keys:
+            print(f"{prefix}{i}. ", end="")
+        else:
+            print(prefix, end="")
+
+        # If the item is a list or dictionary, print it as a string without recursion
+        if isinstance(item, (dict, list)):
+            print(str(item))
+        else:
+            print(item)
+
+
+def _print_dict(response, enumerate_keys, prefix, indent):
+    """Handles printing when the response is a dictionary, without recursion."""
+    for i, (key, value) in enumerate(response.items(), start=1):
+        # If enumeration is enabled, print the index and the key
+        if enumerate_keys:
+            print(f"{prefix}{i}. {key}")
+        else:
+            print(f"{prefix}- {key}")
+
+        # If the value is a list or dictionary, print it in a single line
+        if isinstance(value, (list, dict)):
+            print(f"{prefix}   - {str(value)}")
+        else:
+            print(f"{prefix}   - {value}")
 
 
 def select_from_list(item_list, prompt_message, allow_all=True): # function to select one or multiple items from a list

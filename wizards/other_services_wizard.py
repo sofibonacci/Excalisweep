@@ -116,6 +116,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
                     print(f"Error executing method: {e}")  
                     
         print_list_enumerate(response,"Response: ")
+        print(response)
                 
                 
             
