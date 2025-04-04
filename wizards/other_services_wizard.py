@@ -117,12 +117,12 @@ def execute_method(service_name, method_name): #execute the method u choose (and
             if config.delete_for_real:
                 try:
                     response = method(**params_dict)
-                    log_deletion_attempt(params_dict, service_name,True)
+                    log_action( service_name,params_dict,True,mode="deletion")
                 except Exception as e:
                     print(f"Error executing method: {e}")
-                    log_deletion_attempt(params_dict, service_name,False)
+                    log_action(service_name,params_dict,False,mode="deletion")
             else:
-                log_deletion_attempt(params_dict, service_name,True)
+                log_action(service_name,params_dict,True,mode="deletion")
                 print(f" Logged delete attempt for: {params_dict}")
                 return
         else:

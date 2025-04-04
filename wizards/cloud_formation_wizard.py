@@ -118,12 +118,12 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
                     try:
                         waiter.wait(StackName=stack)
                         print(f"✅ Successfully deleted: {stack}")
-                        log_deletion_attempt(stack, "CloudFormation", True)
+                        log_action("Cloud Formation",stack, True, mode="deletion")
                     except botocore.exceptions.WaiterError as e:
                         print(f"⚠️ Deletion attempt failed for {stack}. It might have dependencies.")
-                        log_deletion_attempt(stack, "CloudFormation", False)
+                        log_action("Cloud Formation",stack, False, mode="deletion")
                 else:
-                    log_action("Cloud Formation", stack, True, mode="request")
+                    log_action("Cloud Formation", stack, True, mode="deletion")
                     print(f" Logged delete attempt for: {stack}")
             
             except (botocore.exceptions.EndpointConnectionError, 
@@ -131,7 +131,7 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
                     boto3.exceptions.Boto3Error, 
                     Exception) as e:
                 print(f"❌ Error while deleting {stack}: {e}")
-                log_action("Cloud Formation", stack, False, mode="request")
+                log_action("Cloud Formation", stack, False, mode="deletion")
     
     except botocore.exceptions.BotoCoreError as e:
         print(f"❌ General AWS BotoCore error: {e}")
