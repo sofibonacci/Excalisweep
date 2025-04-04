@@ -13,8 +13,11 @@ def list_ec2_instances():
     instances = {}
     for reservation in response.get('Reservations', []):
         for instance in reservation.get('Instances', []):
-            instance_id = instance['InstanceId']
             state = instance['State']['Name']
+            if state == "terminated":  # Filter out terminated instances
+                continue
+            
+            instance_id = instance['InstanceId']
             launch_time = instance['LaunchTime']
             instance_type = instance['InstanceType']
             description = instance.get('Tags', [{'Key': 'Name', 'Value': 'No Description'}])[0]['Value']
@@ -64,12 +67,11 @@ def terminate_selected_instances():
     confirm = input(f"\nAre you sure you want to terminate these {len(selected_instances)} instance(s)? (yes/no): ").strip().lower()
     if confirm == "yes":
         for instance in selected_instances:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             if config.delete_for_real:
                 try:
                     ec2_client.terminate_instances(InstanceIds=[instance])
                     print(f"Successfully terminated: {instance}")
-                    logger.log_deletion_attempt(instance, "EC2", True)
+                    log_action("EC2", instance, True, mode="deletion")
                 except Exception as e:
                     print(f"Failed to terminate {instance}: {str(e)}")
                     log_action("EC2", instance, False, mode="deletion")
