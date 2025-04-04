@@ -29,7 +29,7 @@ def list_services():  #list all available AWS servicees
     try:
         session = boto3.Session()
         services  = session.get_available_services()
-        print_list_enumerate(services, "Available AWS services")
+        print_list_enumerate(services, "Available AWS services",False)
         return services 
         
     except botocore.exceptions.BotoCoreError as e:
@@ -69,7 +69,7 @@ def choose_method():  #choose a service and a method to execute
         return
     
     methods = list_all_methods(service)
-    chosen_method = select_from_list(methods, "Choose a method to use by index")
+    chosen_method = select_from_list(methods, "Choose a method to use by index", False)
     
     if chosen_method:
         execute_method(service, chosen_method[0])
@@ -81,16 +81,26 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         method = getattr(client, method_name)
         signature = inspect.signature(method)
         docstring = inspect.getdoc(method).split('\n')
-        pattern = r'(\bresponse\s*=\s*client\.[\w_]+\([^)]*\))'
-        match = re.findall(pattern, inspect.getdoc(method))
+        
+        #regex
+        pattern_response = r'(\bresponse\s*=\s*client\.[\w_]+\([^)]*\))'
+        pattern_params = r':param (\w+):\s+\*\*\[REQUIRED\]\*\*'
+        
+        #regex matches
+        matches = re.findall(pattern_params, inspect.getdoc(method))
+        match = re.findall(pattern_response, inspect.getdoc(method))
+        
         required_params = [param for param, details in signature.parameters.items() if details.default == inspect.Parameter.empty]
         
         print(f"\nMethod: {method_name}")
-        print(f"\nDescription:\n{docstring[0]} \nResponse Syntax: {match[0]}\n" if docstring else "\nNo description available.\n")
-        
-        
+        print(f"\nDescription:{docstring[0]}\n" if docstring else "No description available.\n")
+        print(f"\nResponse Syntax: {match[0]}\n" if match else "\nNo response syntax available.\n")
+        params = '\n'.join(matches) if matches else "No required parameters found."
+        print(f"Required Params --> {params}\n")
+    
+    
         if required_params:
-            params = input('Enter parameters as a JSON string (ex. : {"key": "value"}): ').strip() 
+            params = input('\nEnter parameters as a JSON string (ex. {"key": "value"}): ').strip()
             params_dict = {}
             if params:
                 try:
@@ -99,14 +109,41 @@ def execute_method(service_name, method_name): #execute the method u choose (and
                     print("\n❌ Invalid JSON format. Aborting execution.")
                     return
         else:
-            params_dict = {}
+            print("\nNo required parameters needed.")
         
-        print(f"\nExecuting {service_name}.{method_name}()...")
-        #if config.delete_for_real:
-        response = method(**params_dict)
-        print("\nResponse:", response)
+        print(f"\nExecuting {service_name}.{method_name}()...\n")
+        delete=any(word in method_name.lower() for word in ["delete", "terminate", "remove", "drop", "destroy", "purge"])
+        if delete:
+            if config.delete_for_real:
+                try:
+                    response = method(**params_dict)
+                    log_action( service_name,params_dict,True,mode="deletion")
+                except Exception as e:
+                    print(f"Error executing method: {e}")
+                    log_action(service_name,params_dict,False,mode="deletion")
+            else:
+                log_action(service_name,params_dict,True,mode="deletion")
+                print(f" Logged delete attempt for: {params_dict}")
+                return
+        else:
+            try:
+                response = method(**params_dict)
+            except Exception as e:
+                    print(f"Error executing method: {e}")  
+        
+        
+        status_code = response.get("ResponseMetadata", {}).get("HTTPStatusCode", None)
+        if status_code == 200:
+            response.pop("ResponseMetadata", None) 
+            print_list_enumerate(response, "Response")
+        else:
+            print(f"Failed with status code: {status_code if status_code else 'Unknown'}")
+            
+            
+                
+           
     except Exception as e:
-        print(f"Error executing method: {e}")
+        print(f"{e}")
 
 
 def interactive_menu():  # Interactive menu for user interaction

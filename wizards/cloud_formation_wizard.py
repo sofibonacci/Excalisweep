@@ -12,30 +12,61 @@ def list_cloudformation_stacks(): #retrieve and display all cloudformation stack
     try:
         client = boto3.client('cloudformation')
         stacks = {}
-        response = client.list_stacks()
+        response = client.list_stacks(StackStatusFilter=[
+                'CREATE_IN_PROGRESS', 'CREATE_FAILED', 'CREATE_COMPLETE',
+                'ROLLBACK_IN_PROGRESS', 'ROLLBACK_FAILED', 'ROLLBACK_COMPLETE',
+                'DELETE_IN_PROGRESS', 'DELETE_FAILED',
+                'UPDATE_IN_PROGRESS', 'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS',
+                'UPDATE_COMPLETE', 'UPDATE_FAILED',
+                'UPDATE_ROLLBACK_IN_PROGRESS', 'UPDATE_ROLLBACK_FAILED',
+                'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS', 'UPDATE_ROLLBACK_COMPLETE',
+                'REVIEW_IN_PROGRESS', 'IMPORT_IN_PROGRESS', 'IMPORT_COMPLETE',
+                'IMPORT_ROLLBACK_IN_PROGRESS', 'IMPORT_ROLLBACK_FAILED', 'IMPORT_ROLLBACK_COMPLETE'
+            ])
 
         for stack in response.get('StackSummaries', []):
             stack_name = stack['StackName']
-            
+            stack_status = stack['StackStatus']
             
             stacks[stack_name] = {
                 'CreationTime': stack['CreationTime'],
-                'StackStatus': stack['StackStatus'],
+                'StackStatus': stack_status,
                 'StackId': stack['StackId'],
+                'Description': None
             }
         
         while 'NextToken' in response: 
-            response = client.list_stacks(NextToken=response['NextToken'])
+            response = client.list_stacks(StackStatusFilter=[
+                'CREATE_IN_PROGRESS', 'CREATE_FAILED', 'CREATE_COMPLETE',
+                'ROLLBACK_IN_PROGRESS', 'ROLLBACK_FAILED', 'ROLLBACK_COMPLETE',
+                'DELETE_IN_PROGRESS', 'DELETE_FAILED',
+                'UPDATE_IN_PROGRESS', 'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS',
+                'UPDATE_COMPLETE', 'UPDATE_FAILED',
+                'UPDATE_ROLLBACK_IN_PROGRESS', 'UPDATE_ROLLBACK_FAILED',
+                'UPDATE_ROLLBACK_COMPLETE_CLEANUP_IN_PROGRESS', 'UPDATE_ROLLBACK_COMPLETE',
+                'REVIEW_IN_PROGRESS', 'IMPORT_IN_PROGRESS', 'IMPORT_COMPLETE',
+                'IMPORT_ROLLBACK_IN_PROGRESS', 'IMPORT_ROLLBACK_FAILED', 'IMPORT_ROLLBACK_COMPLETE'
+            ],NextToken=response['NextToken'])
+            
             for stack in response.get('StackSummaries', []):
                 stack_name = stack['StackName']
-                
                 stacks[stack_name] = {
                     'CreationTime': stack['CreationTime'],
                     'StackStatus': stack['StackStatus'],
                     'StackId': stack['StackId'],
+                    'Description': None  
                 }
+                
+        for stack_name in stacks.keys():
+            try:
+                stack_details = client.describe_stacks(StackName=stack_name)['Stacks'][0]
+                stacks[stack_name]['Description'] = stack_details.get('Description', 'No description provided')
+            except botocore.exceptions.ClientError as e:
+                print(f"⚠️ No se pudo obtener la descripción de {stack_name}: {e}")
+                stacks[stack_name]['Description'] = 'Error retrieving description'
         
-        print_list_enumerate(list(stacks.keys()), "CloudFormation Stacks")
+        
+        print_list_enumerate(stacks, "CloudFormation Stacks")
         
         return stacks if stacks else {}
     
@@ -63,8 +94,7 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
         return
         
     selected_stacks = select_from_list(list(stacks.keys()),
-                                       "Enter the numbers of the stacks you want to delete (comma-separated), or type 'all' to delete all:",
-                                       allow_all=True)
+                                       "Enter the numbers of the stacks you want to delete (comma-separated), or type 'all' to delete all:",)
 
     if not selected_stacks:
         print("\n🚫 No valid stacks selected for deletion.")
@@ -79,13 +109,21 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
     try:
         cloudformation_client = boto3.client('cloudformation')
         for stack in selected_stacks:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
             try:
                 if config.delete_for_real:
                     cloudformation_client.delete_stack(StackName=stack)
-                    print(f"✅ Successfully deleted: {stack}")
+                    print(f"⏳ Deletion initiated for: {stack}, waiting for confirmation...")
+                    waiter = cloudformation_client.get_waiter('stack_delete_complete')
+                    try:
+                        waiter.wait(StackName=stack)
+                        print(f"✅ Successfully deleted: {stack}")
+                        log_action("Cloud Formation",stack, True, mode="deletion")
+                    except botocore.exceptions.WaiterError as e:
+                        print(f"⚠️ Deletion attempt failed for {stack}. It might have dependencies.")
+                        log_action("Cloud Formation",stack, False, mode="deletion")
                 else:
-                    log_action("Cloud Formation", stack, True, mode="request")
+                    log_action("Cloud Formation", stack, True, mode="deletion")
                     print(f" Logged delete attempt for: {stack}")
             
             except (botocore.exceptions.EndpointConnectionError, 
@@ -93,7 +131,7 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
                     boto3.exceptions.Boto3Error, 
                     Exception) as e:
                 print(f"❌ Error while deleting {stack}: {e}")
-                log_action("Cloud Formation", stack, False, mode="request")
+                log_action("Cloud Formation", stack, False, mode="deletion")
     
     except botocore.exceptions.BotoCoreError as e:
         print(f"❌ General AWS BotoCore error: {e}")
