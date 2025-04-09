@@ -70,12 +70,12 @@ def list_billed_services():
         return {}
 
 def show_billed_services():
-    """Display AWS services that have incurred costs in the last specified number of days."""
-    print(f"\nAWS Services with costs in the last {days_to_observe} days:")
+    """Display AWS services that have been active on the last specified number of days."""
+    print(f"\nAWS Services that have been active on the last {days_to_observe} days:")
 
     services = list_billed_services()
     if not services:
-        print("No services with costs found.")
+        print("No active services found.")
     else: 
         for service, cost in sorted(services.items(), key=lambda x: x[1], reverse=True):
             print(f" {service}: ${cost:.2f}")
