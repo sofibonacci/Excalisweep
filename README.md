@@ -19,7 +19,16 @@ Every AWS Service (S3, EC2, etc) has its own deletion process (e.g., different b
 - EC2
 - Cloud Formation
 - Lambda
-- Other Services -> here you'll have all the AWS services available to interact with, and have to input a JSON for the function you want to excecute (you'll be sending API calls yourself)
+- Other Services -> A Python CLI tool to explore and interact with AWS services using **Boto3**. Ideal for listing services, discovering methods (especially those for listing or deletion), and executing them with parameter support.
+    ## Features
+-  List all available AWS services
+-  View methods for a selected service (filtered for `list`, `delete`, `terminate`, etc.)
+-  Shows:
+  - Method description
+  - Required parameters
+  - Example response syntax
+-  Prompt for JSON-formatted input when parameters are required
+-  Logs delete attempts or executions based on config
 
 ## How to use: 
 Clone the repo and run the wizard in CloudShell within the AWS Sandbox you desire to manage.
