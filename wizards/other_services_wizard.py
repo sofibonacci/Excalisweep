@@ -9,27 +9,13 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from logger import log_action
 import config
 
-"""
-example for saving logs:
-log_action(
-    service_name="Lambda",
-    resource_name={here goes the resource being called}, 
-    success=None,  # Not needed for this mode
-    mode="other",
-    function_name="{here goes the function name}",
-    json_input='{here goes the json input}',
-    response_json='{here goes the response}'
-
-    when testing, see how it looks on the log file and if it needs formatting, specially for the jsons
-)
-"""
 
 
-def list_services():  #list all available AWS servicees
+def list_services():  #list all available AWS services
     try:
         session = boto3.Session()
-        services  = session.get_available_services()
-        print_list_enumerate(services, "Available AWS services",False)
+        services = sorted(session.get_available_services())
+        print_columns(services, "Available AWS services")
         return services 
         
     except botocore.exceptions.BotoCoreError as e:
@@ -92,11 +78,11 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         
         required_params = [param for param, details in signature.parameters.items() if details.default == inspect.Parameter.empty]
         
-        print(f"\nMethod: {method_name}")
-        print(f"\nDescription:{docstring[0]}\n" if docstring else "No description available.\n")
-        print(f"\nResponse Syntax: {match[0]}\n" if match else "\nNo response syntax available.\n")
-        params = '\n'.join(matches) if matches else "No required parameters found."
-        print(f"Required Params --> {params}\n")
+        print(f"\n🛠️ Method: {method_name}")
+        print(f"\n📄 Description:{docstring[0]}" if docstring else "No description available.\n")
+        print(f"\n📦 Response Syntax:\n\n {match[0]}\n" if match else "\nNo response syntax available.\n")
+        print(f"{'⚠️ Required Parameters: ' + ', '.join(matches) if matches else '✅ This method does not require any parameters.'}")
+
     
     
         if required_params:
@@ -117,13 +103,13 @@ def execute_method(service_name, method_name): #execute the method u choose (and
             if config.delete_for_real:
                 try:
                     response = method(**params_dict)
-                    log_action( service_name,params_dict,True,mode="deletion")
+                    log_action( service_name.title(),', '.join(map(str, params_dict.values())),True,mode="deletion")
                 except Exception as e:
                     print(f"Error executing method: {e}")
-                    log_action(service_name,params_dict,False,mode="deletion")
+                    log_action(service_name.title(),', '.join(map(str, params_dict.values())),False,mode="deletion")
             else:
-                log_action(service_name,params_dict,True,mode="deletion")
-                print(f" Logged delete attempt for: {params_dict}")
+                log_action(service_name.title(),', '.join(map(str, params_dict.values())),True,mode="deletion")
+                print(f" Logged delete attempt for: {', '.join(map(str, params_dict.values()))}")
                 return
         else:
             try:
@@ -135,7 +121,8 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         status_code = response.get("ResponseMetadata", {}).get("HTTPStatusCode", None)
         if status_code == 200:
             response.pop("ResponseMetadata", None) 
-            print_list_enumerate(response, "Response")
+            print(f"\n✅ Response:\n{json.dumps(response, indent=4, sort_keys=True, default=str)}")
+
         else:
             print(f"Failed with status code: {status_code if status_code else 'Unknown'}")
             
@@ -165,6 +152,49 @@ def interactive_menu():  # Interactive menu for user interaction
             services = list_services()
         
         elif choice == "2":
+            need_help = input("❓ Do you want help on how to use Option 2? (yes/no): ").strip().lower()
+            
+            if need_help == "yes":
+                print("""
+                    🧙 HOW TO USE OPTION 2 - 'Choose a Service and Method'
+
+                    🔹 STEP 1: Enter the AWS service name (example: s3, ec2, eks)
+
+                    🔹 STEP 2: The wizard will show all related methods (especially those for listing or deleting)
+
+                    🔹 STEP 3: Choose a method by its index number
+
+                    🔹 STEP 4: You'll see:
+                        ✅ A short method description
+                        ✅ Required parameters (if any)
+                        ✅ Example of the response syntax
+
+                    🔹 STEP 5: If the method requires parameters, enter them as a JSON string
+                        📌 Example: {"name": "my-cluster"}
+
+                    🔹 STEP 6: The method will run.
+                        - If it's a delete method and 'delete_for_real' is False, the action will only be logged.
+
+                    -------------------------------------------------------------
+                    🎓 EXAMPLES USING EKS
+
+                    🔹 Example 1 - Method with REQUIRED parameter:
+                    👉 Service: eks
+                    👉 Method: delete_cluster
+                    👉 Required parameter: name (the name of your cluster)
+
+                    📘 JSON input: {"name": "my-cluster"}
+
+                    🔹 Example 2 - Method WITHOUT required parameters:
+                    👉 Service: eks
+                    👉 Method: list_clusters
+                    👉 Required parameters: none
+
+                    📘 Just press Enter when asked for JSON input
+
+                    -------------------------------------------------------------
+                    """)
+                
             choose_method()
 
         elif choice == "3":

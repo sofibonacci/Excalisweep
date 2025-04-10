@@ -1,6 +1,7 @@
 ###########use in all wizards##########
+import shutil
 
-def print_list_enumerate(response, title, enumerate_keys=True, indent=0):  
+def print_list_enumerate(response, title, indent=0):  
     if not response:
         print(f"\nNo {title} found.")
         return
@@ -8,35 +9,55 @@ def print_list_enumerate(response, title, enumerate_keys=True, indent=0):
     prefix = "  " * indent  
 
     if indent == 0:  
-        print(f"\n{title}:")
+        print(f"\n{title}:\n")
 
     if isinstance(response, list):
-        for i, item in enumerate(response, start=1) if enumerate_keys else enumerate(response, start=0):
-            if enumerate_keys and indent == 0:  
+        for i, item in enumerate(response, start=1):
+            if indent == 0:  
                 print(f"{prefix}{i}. ", end="")
             else:
                 print(prefix, end="")
 
-            
             if isinstance(item, (dict, list)):
-                print_list_enumerate(item, title, enumerate_keys, indent + 1)
+                print_list_enumerate(item, title, indent + 1)
             else:
                 print(item)
 
     elif isinstance(response, dict):
-        for i, (key, value) in enumerate(response.items(), start=1) if enumerate_keys else response.items():
-            if enumerate_keys and indent == 0:  
-                print(f"{prefix}{i}. {key}")
+        for i, (key, value) in enumerate(response.items(), start=1):
+            if  indent == 0:  
+                print(f"{prefix}{i}. {key} ")
             else:
                 print(f"{prefix}- {key}")
 
             
             if isinstance(value, (list, dict)):
-                print_list_enumerate(value, title, enumerate_keys, indent + 1)
+                print_list_enumerate(value, title, indent + 1)
             else:
                 print(f"{prefix}   - {value}")
+                
 
 
+def print_columns(items, title=""):
+    if title:
+        print(f"\n{title}:\n")
+
+    if not items:
+        print("No items to display.\n")
+        return
+
+    max_item_length = max(len(str(item)) for item in items) + 2  
+    terminal_width = shutil.get_terminal_size(fallback=(100, 20)).columns
+    num_cols = max(1, terminal_width // max_item_length)
+
+    for i, item in enumerate(items):
+        print(f"{str(item):<{max_item_length}}", end="")
+        if (i + 1) % num_cols == 0:
+            print()
+    if len(items) % num_cols != 0:
+        print()
+
+    
 def select_from_list(item_list, prompt_message, allow_all=True): # function to select one or multiple items from a list
     """
     allow_all:
