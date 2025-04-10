@@ -1,42 +1,45 @@
 ###########use in all wizards##########
 
-def print_list_enumerate(response, title, enumerate_keys=True, indent=0):  
+def print_list_enumerate(response, title="", indent=0):
     if not response:
         print(f"\nNo {title} found.")
         return
 
-    prefix = "  " * indent  
+    prefix = "  " * indent
 
-    if indent == 0:  
+    if indent == 0 and title:
         print(f"\n{title}:")
 
     if isinstance(response, list):
-        for i, item in enumerate(response, start=1) if enumerate_keys else enumerate(response, start=0):
-            if enumerate_keys and indent == 0:  
-                print(f"{prefix}{i}. ", end="")
-            else:
-                print(prefix, end="")
-
-            
+        for i, item in enumerate(response, start=1):
+            print(f"{prefix}{i}. ", end="")
             if isinstance(item, (dict, list)):
-                print_list_enumerate(item, title, enumerate_keys, indent + 1)
+                print_list_enumerate(item, "", indent + 1)
             else:
                 print(item)
 
     elif isinstance(response, dict):
-        for i, (key, value) in enumerate(response.items(), start=1) if enumerate_keys else response.items():
-            if enumerate_keys and indent == 0:  
-                print(f"{prefix}{i}. {key}")
-            else:
-                print(f"{prefix}- {key}")
-
-            
+        for key, value in response.items():
+            print(f"{prefix}- {key}")
             if isinstance(value, (list, dict)):
-                print_list_enumerate(value, title, enumerate_keys, indent + 1)
+                print_list_enumerate(value, "", indent + 1)
             else:
                 print(f"{prefix}   - {value}")
 
 
+def print_columns(items, title="", col_width=25):
+    if title:
+        print(f"\n{title}:\n")
+
+    terminal_width = shutil.get_terminal_size(fallback=(80, 20)).columns
+    num_cols = max(1, terminal_width // col_width)
+
+    for i, item in enumerate(items):
+        print(f"{item:<{col_width}}", end="")
+        if (i + 1) % num_cols == 0:
+            print()
+    print("\n")
+    
 def select_from_list(item_list, prompt_message, allow_all=True): # function to select one or multiple items from a list
     """
     allow_all:

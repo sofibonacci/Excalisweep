@@ -9,27 +9,13 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from logger import log_action
 import config
 
-"""
-example for saving logs:
-log_action(
-    service_name="Lambda",
-    resource_name={here goes the resource being called}, 
-    success=None,  # Not needed for this mode
-    mode="other",
-    function_name="{here goes the function name}",
-    json_input='{here goes the json input}',
-    response_json='{here goes the response}'
-
-    when testing, see how it looks on the log file and if it needs formatting, specially for the jsons
-)
-"""
 
 
 def list_services():  #list all available AWS services
     try:
         session = boto3.Session()
-        services  = session.get_available_services()
-        print_list_enumerate(services, "Available AWS services",False)
+        services = sorted(session.get_available_services())
+        print_columns(services, "Available AWS services")
         return services 
         
     except botocore.exceptions.BotoCoreError as e:
