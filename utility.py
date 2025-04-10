@@ -26,7 +26,7 @@ def print_list_enumerate(response, title, indent=0):
     elif isinstance(response, dict):
         for i, (key, value) in enumerate(response.items(), start=1):
             if  indent == 0:  
-                print(f"{prefix}{i}. {key}")
+                print(f"{prefix}{i}. {key} ")
             else:
                 print(f"{prefix}- {key}")
 
@@ -37,18 +37,27 @@ def print_list_enumerate(response, title, indent=0):
                 print(f"{prefix}   - {value}")
                 
 
-def print_columns(items, title="", col_width=25):
+
+def print_columns(items, title=""):
     if title:
         print(f"\n{title}:\n")
 
-    terminal_width = shutil.get_terminal_size(fallback=(80, 20)).columns
-    num_cols = max(1, terminal_width // col_width)
+    if not items:
+        print("No items to display.\n")
+        return
+
+    # Longitud máxima del ítem
+    max_item_length = max(len(str(item)) for item in items) + 2  
+    terminal_width = shutil.get_terminal_size(fallback=(100, 20)).columns
+    num_cols = max(1, terminal_width // max_item_length)
 
     for i, item in enumerate(items):
-        print(f"{item:<{col_width}}", end="")
+        print(f"{str(item):<{max_item_length}}", end="")
         if (i + 1) % num_cols == 0:
             print()
-    print("\n")
+    if len(items) % num_cols != 0:
+        print()
+
     
 def select_from_list(item_list, prompt_message, allow_all=True): # function to select one or multiple items from a list
     """
