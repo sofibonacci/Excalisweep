@@ -80,7 +80,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         
         print(f"\n🛠️ Method: {method_name}")
         print(f"\n📄 Description:{docstring[0]}\n" if docstring else "No description available.\n")
-        print(f"\n📦 Response Syntax:\n {match[0]}\n" if match else "\nNo response syntax available.\n")
+        print(f"\n📦 Response Syntax:\n\n {match[0]}\n" if match else "\nNo response syntax available.\n")
         print(f"{'⚠️ Required Parameters: ' + ', '.join(matches) if matches else '✅ This method does not require any parameters.'}")
 
     
