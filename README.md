@@ -24,7 +24,7 @@ Every AWS Service (S3, EC2, etc) has its own deletion process (e.g., different b
 - Lambda
 - Other Services -> A Python CLI tool to explore and interact with AWS services using **Boto3**. Ideal for listing services, discovering methods (especially those for listing or deletion), and executing them with parameter support.
 
-  ### Features
+  **Features**
 
   - List all available AWS services
   - View methods for a selected service (filtered for `list`, `delete`, `terminate`, etc.)
