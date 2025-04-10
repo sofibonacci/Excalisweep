@@ -46,7 +46,6 @@ def print_columns(items, title=""):
         print("No items to display.\n")
         return
 
-    # Longitud máxima del ítem
     max_item_length = max(len(str(item)) for item in items) + 2  
     terminal_width = shutil.get_terminal_size(fallback=(100, 20)).columns
     num_cols = max(1, terminal_width // max_item_length)
