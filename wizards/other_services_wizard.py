@@ -135,7 +135,8 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         status_code = response.get("ResponseMetadata", {}).get("HTTPStatusCode", None)
         if status_code == 200:
             response.pop("ResponseMetadata", None) 
-            print_list_enumerate(response, "Response")
+            print(f"\n✅ Response:\n{json.dumps(response, indent=4, sort_keys=True, default=str)}")
+
         else:
             print(f"Failed with status code: {status_code if status_code else 'Unknown'}")
             
