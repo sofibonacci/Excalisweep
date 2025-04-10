@@ -1,41 +1,32 @@
 ###########use in all wizards##########
 
-def print_list_enumerate(response, title, indent=0):  
+def print_list_enumerate(response, title="", indent=0, level0_counter=[1]):
     if not response:
-        print(f"\nNo {title} found.")
+        if indent == 0:
+            print(f"\nNo {title} found.")
         return
 
-    prefix = "  " * indent  
+    prefix = "  " * indent
 
-    if indent == 0:  
-        print(f"\n{title}:")
+    if indent == 0 and title:
+        print(f"\n{title}:\n")
 
-    if isinstance(response, list):
-        for i, item in enumerate(response, start=1):
-            if indent == 0:  
-                print(f"{prefix}{i}. ", end="")
-            else:
-                print(prefix, end="")
-
-            
-            if isinstance(item, (dict, list)):
-                print_list_enumerate(item, title, indent + 1)
-            else:
-                print(item)
-
-    elif isinstance(response, dict):
-        for i, (key, value) in enumerate(response.items(), start=1):
-            if  indent == 0:  
-                print(f"{prefix}{i}. {key}")
+    if isinstance(response, dict):
+        for key, value in response.items():
+            if indent == 0:
+                print(f"{level0_counter[0]}. {key}")
+                level0_counter[0] += 1
             else:
                 print(f"{prefix}- {key}")
+            print_list_enumerate(value, "", indent + 1, level0_counter)
 
-            
-            if isinstance(value, (list, dict)):
-                print_list_enumerate(value, title, indent + 1)
+    elif isinstance(response, list):
+        for item in response:
+            if isinstance(item, dict):
+                print_list_enumerate(item, "", indent, level0_counter)
             else:
-                print(f"{prefix}   - {value}")
-                
+                print(f"{prefix}- {item}")
+
 
 def print_columns(items, title="", col_width=25):
     if title:
