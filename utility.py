@@ -1,31 +1,41 @@
 ###########use in all wizards##########
 
-def print_list_enumerate(response, title="", indent=0):
+def print_list_enumerate(response, title, indent=0):  
     if not response:
         print(f"\nNo {title} found.")
         return
 
-    prefix = "  " * indent
+    prefix = "  " * indent  
 
-    if indent == 0 and title:
+    if indent == 0:  
         print(f"\n{title}:")
 
     if isinstance(response, list):
         for i, item in enumerate(response, start=1):
-            print(f"{prefix}{i}. ", end="")
+            if indent == 0:  
+                print(f"{prefix}{i}. ", end="")
+            else:
+                print(prefix, end="")
+
+            
             if isinstance(item, (dict, list)):
-                print_list_enumerate(item, "", indent + 1)
+                print_list_enumerate(item, title, indent + 1)
             else:
                 print(item)
 
     elif isinstance(response, dict):
-        for key, value in response.items():
-            print(f"{prefix}- {key}")
+        for i, (key, value) in enumerate(response.items(), start=1):
+            if  indent == 0:  
+                print(f"{prefix}{i}. {key}")
+            else:
+                print(f"{prefix}- {key}")
+
+            
             if isinstance(value, (list, dict)):
-                print_list_enumerate(value, "", indent + 1)
+                print_list_enumerate(value, title, indent + 1)
             else:
                 print(f"{prefix}   - {value}")
-
+                
 
 def print_columns(items, title="", col_width=25):
     if title:
