@@ -25,7 +25,7 @@ log_action(
 """
 
 
-def list_services():  #list all available AWS servicees
+def list_services():  #list all available AWS services
     try:
         session = boto3.Session()
         services  = session.get_available_services()
