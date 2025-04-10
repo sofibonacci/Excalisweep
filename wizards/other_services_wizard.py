@@ -152,6 +152,49 @@ def interactive_menu():  # Interactive menu for user interaction
             services = list_services()
         
         elif choice == "2":
+            need_help = input("❓ Do you want help on how to use Option 2? (yes/no): ").strip().lower()
+            
+            if need_help == "yes":
+                print("""
+                    🧙 HOW TO USE OPTION 2 - 'Choose a Service and Method'
+
+                    🔹 STEP 1: Enter the AWS service name (example: s3, ec2, eks)
+
+                    🔹 STEP 2: The wizard will show all related methods (especially those for listing or deleting)
+
+                    🔹 STEP 3: Choose a method by its index number
+
+                    🔹 STEP 4: You'll see:
+                        ✅ A short method description
+                        ✅ Required parameters (if any)
+                        ✅ Example of the response syntax
+
+                    🔹 STEP 5: If the method requires parameters, enter them as a JSON string
+                        📌 Example: {"name": "my-cluster"}
+
+                    🔹 STEP 6: The method will run.
+                        - If it's a delete method and 'delete_for_real' is False, the action will only be logged.
+
+                    -------------------------------------------------------------
+                    🎓 EXAMPLES USING EKS
+
+                    🔹 Example 1 - Method with REQUIRED parameter:
+                    👉 Service: eks
+                    👉 Method: delete_cluster
+                    👉 Required parameter: name (the name of your cluster)
+
+                    📘 JSON input: {"name": "my-cluster"}
+
+                    🔹 Example 2 - Method WITHOUT required parameters:
+                    👉 Service: eks
+                    👉 Method: list_clusters
+                    👉 Required parameters: none
+
+                    📘 Just press Enter when asked for JSON input
+
+                    -------------------------------------------------------------
+                    """)
+                
             choose_method()
 
         elif choice == "3":
