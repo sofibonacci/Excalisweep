@@ -78,11 +78,11 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         
         required_params = [param for param, details in signature.parameters.items() if details.default == inspect.Parameter.empty]
         
-        print(f"\nMethod: {method_name}")
-        print(f"\nDescription:{docstring[0]}\n" if docstring else "No description available.\n")
-        print(f"\nResponse Syntax: {match[0]}\n" if match else "\nNo response syntax available.\n")
-        params = '\n'.join(matches) if matches else "No required parameters found."
-        print(f"Required Params --> {params}\n")
+        print(f"\n🛠️ Method: {method_name}")
+        print(f"\n📄 Description:{docstring[0]}\n" if docstring else "No description available.\n")
+        print(f"\n📦 Response Syntax:\n {match[0]}\n" if match else "\nNo response syntax available.\n")
+        print(f"{'\n⚠️ Required Parameters: ' + ', '.join(matches) if matches else '✅ This method does not require any parameters.'}")
+
     
     
         if required_params:
