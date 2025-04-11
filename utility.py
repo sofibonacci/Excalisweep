@@ -3,18 +3,17 @@ import shutil
 ########### use in all wizards ##########
 
 # -----------------------------------------
-# Function: print_list_enumerate --> use them in all 
+# Function: print_list_enumerate --> use it in all
 # -----------------------------------------
-# Description: --> use it in all wizards inside listing functions
-#   Recursively prints lists or dictionaries in a clean, enumerated format.
-#   Useful for structured CLI output, especially for debugging or user wizards.
+# Description: Use it in all wizards inside listing functions.
+#   Cleanly prints lists or dictionaries with enumeration.
+#   Useful for displaying AWS resources or structured CLI output.
 # Parameters:
-#   - response: list or dict to print
-#   - title: title of the section
-#   - indent: internal use for recursive indentation
+#   - data: list or dict to print
+#   - title: title of the printed section
 # Usage:
-#   print_list_enumerate(data, "My Data")
-#   data can be a list, dict, or nested structure
+#   print_list_enumerate(my_data, "EC2 Instances")
+#   my_data can be a list, dict, or nested structure.
 # -----------------------------------------
 
 def print_list_enumerate(data, title):  
@@ -32,7 +31,7 @@ def print_list_enumerate(data, title):
                     print(f"   - {subkey}: {subval}")
             else:
                 print(f"   - {value}")
-            print()  # Salto de línea entre ítems
+            print()  
 
     elif isinstance(data, list):
         for i, item in enumerate(data, start=1):
