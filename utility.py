@@ -17,45 +17,27 @@ import shutil
 #   data can be a list, dict, or nested structure
 # -----------------------------------------
 
-def print_list_enumerate(response, title, indent=0):  
-    if not response:
+def print_list_enumerate(data, title):  
+    if not data:
         print(f"\nNo {title} found.")
         return
 
-    prefix = "  " * indent  
+    print(f"\n🔹 {title}:\n")
 
-    if indent == 0:  
-        print(f"\n{title}:\n")
-
-    if isinstance(response, list):
-        for i, item in enumerate(response, start=1):
-            if indent == 0:  
-                print(f"{prefix}{i}. ", end="")
+    if isinstance(data, dict):
+        for i, (key, value) in enumerate(data.items(), start=1):
+            print(f"{i}. {key}")
+            if isinstance(value, dict):
+                for subkey, subval in value.items():
+                    print(f"   - {subkey}: {subval}")
             else:
-                print(prefix, end="")
+                print(f"   - {value}")
+            print()  # Salto de línea entre ítems
 
-            if isinstance(item, (dict, list)):
-                print_list_enumerate(item, title, indent + 1)
-            else:
-                print(item)
-
-            if indent == 0: 
-                print()  # Adds a blank line between top-level items
-
-    elif isinstance(response, dict):
-        for i, (key, value) in enumerate(response.items(), start=1):
-            if indent == 0:  
-                print(f"{prefix}{i}. {key}")
-            else:
-                print(f"{prefix}- {key}")
-
-            if isinstance(value, (list, dict)):
-                print_list_enumerate(value, title, indent + 1)
-            else:
-                print(f"{prefix}   - {value}")
-
-            if indent == 0: 
-                print()  # Adds a blank line between top-level items
+    elif isinstance(data, list):
+        for i, item in enumerate(data, start=1):
+            print(f"{i}. {item}")
+        print()
 
 
 # -----------------------------------------
