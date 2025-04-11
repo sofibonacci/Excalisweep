@@ -147,7 +147,7 @@ def interactive_menu():
 
         if choice == "1":
             print("Waiting for stacks...")
-            buckets = list_cloudformation_stacks()
+            list_cloudformation_stacks()
         
         elif choice == "2":
             delete_selected_stacks()
