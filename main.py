@@ -4,6 +4,7 @@ import subprocess
 from datetime import datetime, timedelta
 from config import *
 import requests
+import time
 
 def show_intro():
     print("""
@@ -59,6 +60,7 @@ def set_status():
                 print("Testing mode activated.")
             break
         print("Invalid input. Please enter 'r' or 't'.")
+        time.sleep(1)
 
 def list_billed_services():
     """Retrieve AWS services that incurred costs in the last specified number of days on config.py."""
