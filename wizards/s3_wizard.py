@@ -1,5 +1,4 @@
 import boto3
-import datetime
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -83,8 +82,12 @@ def delete_selected_buckets():
         status = buckets[bucket]['Status']
         print(f"{idx}. {bucket} ({status})")
 
-    print("\nEnter the numbers of the buckets you want to delete (comma-separated), or type 'all' to delete all:")
+    print("\nEnter the numbers of the buckets you want to delete (comma-separated), type 'all' to delete all, or 'exit' to cancel:")
     choice = input("Your choice: ").strip().lower()
+
+    if choice == "exit":
+        print("❌ Deletion canceled by user.")
+        return
 
     if choice == "all":
         selected_buckets = bucket_list
@@ -100,29 +103,31 @@ def delete_selected_buckets():
         print("\nNo valid buckets selected for deletion.")
         return
 
-    confirm = input(f"\nAre you sure you want to delete these {len(selected_buckets)} bucket(s)? (yes/no): ").strip().lower()
-    if confirm == "yes":
-        for bucket in selected_buckets:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if config.delete_for_real:
-                # Empty the bucket before deleting it
-                if empty_bucket(bucket):
-                    try:
-                        s3_client.delete_bucket(Bucket=bucket)
-                        print(f"Successfully deleted: {bucket}")
-                        logger.log_deletion_attempt(bucket, "S3", True)
-                    except Exception as e:
-                        print(f"Failed to delete {bucket}: {str(e)}")
-                        log_action("S3", bucket, False, mode="deletion")
-                else:
-                    print(f"Failed to empty bucket {bucket}. Skipping deletion.")
-                    logger.log_deletion_attempt(bucket, "S3", False)
-            else:
-
-                log_action("S3", bucket, True, mode="deletion")
-                print(f"Logged delete attempt for: {bucket}")
-    else:
+    confirm = input(f"\nAre you sure you want to delete these {len(selected_buckets)} bucket(s)? (yes/no/exit): ").strip().lower()
+    if confirm == "exit":
+        print("❌ Deletion canceled by user.")
+        return
+    elif confirm != "yes":
         print("Deletion canceled.")
+        return
+
+    for bucket in selected_buckets:
+        if config.delete_for_real:
+            if empty_bucket(bucket):
+                try:
+                    s3_client.delete_bucket(Bucket=bucket)
+                    print(f"✅ Successfully deleted: {bucket}")
+                    log_action(bucket, "S3", True)
+                except Exception as e:
+                    print(f"❌ Failed to delete {bucket}: {str(e)}")
+                    log_action("S3", bucket, False, mode="deletion")
+            else:
+                print(f"⚠️ Failed to empty bucket {bucket}. Skipping deletion.")
+                log_action(bucket, "S3", False)
+        else:
+            log_action("S3", bucket, True, mode="deletion")
+            print(f"📝 Logged delete attempt for: {bucket}")
+
 
 def interactive_menu():
     print("""
