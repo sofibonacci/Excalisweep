@@ -19,6 +19,24 @@ def show_intro():
     az = get_availability_zone()
     print(f"📍 Region: {region}")
     print(f"🏠 Availability Zone: {az}\n")
+    set_status()
+
+
+def set_status():
+    """set status to real deletion or testing"""
+    global delete_for_real
+    while True:
+        status=input("Choose a mode: press 'r' for real deletion of buckets, or 't' for testing only: ").strip().lower()
+        if status in ("r","t"):
+            if status=="r":
+                delete_for_real= True
+                print("Real deletion mode activated.")
+            else:
+                delete_for_real=False
+                print("Testing mode activated.")
+            break
+        print("Invalid input. Please enter 'r' or 't'.")
+
 
 def get_region():
     """Get current AWS region from boto3 session, or fallback to instance metadata."""
