@@ -50,6 +50,7 @@ def set_status():
     """set status to real deletion or testing"""
     global delete_for_real
     while True:
+        print()
         status=input("Choose a mode: press 'r' for real deletion of buckets, or 't' for testing only: ").strip().lower()
         if status in ("r","t"):
             if status=="r":
@@ -87,12 +88,12 @@ def list_billed_services():
         return {}
 
 def show_billed_services():
-    """Display AWS services that have incurred costs in the last specified number of days."""
-    print(f"\nAWS Services with costs in the last {days_to_observe} days:")
+    """Display AWS services that have been active on the last specified number of days."""
+    print(f"\nAWS Services that have been active on the last {days_to_observe} days:")
 
     services = list_billed_services()
     if not services:
-        print("No services with costs found.")
+        print("No active services found.")
     else: 
         for service, cost in sorted(services.items(), key=lambda x: x[1], reverse=True):
             print(f" {service}: ${cost:.2f}")
@@ -133,7 +134,8 @@ def main_menu():
         '5': lambda: invoke_script('ec2_wizard'),
         '6': lambda: invoke_script('lambda_wizard'),
         '7': show_logs,
-        '8': lambda: print("Exiting ExcaliSweep. Goodbye!")
+        '8': set_status,
+        '9': lambda: print("Exiting ExcaliSweep. Goodbye!")
     }
     
     while True:
@@ -145,12 +147,13 @@ def main_menu():
         print("  5. Run EC2 Cleanup Wizard")
         print("  6. Run Lambda Cleanup Wizard")
         print("  7. View logs")
-        print("  8. Exit")
+        print("  8. Change mode")
+        print("  9. Exit")
         choice = input("Select an option: ").strip()
         
         action = options.get(choice)
         if action:
-            if choice == '8':
+            if choice == '9':
                 action()
                 break
             else:
