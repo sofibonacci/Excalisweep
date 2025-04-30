@@ -94,6 +94,10 @@ def select_from_list(item_list, prompt_message, allow_all=True):
     print(f"\n{prompt_message}")
     choice = input("\nYour choice: ").strip().lower()
     
+    if choice == "exit":
+        print("\nExiting selection.")
+        return []
+    
     if allow_all and choice == "all":
         return item_list 
     

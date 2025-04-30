@@ -30,7 +30,6 @@ def list_cloudformation_stacks(): #retrieve and display all cloudformation stack
             stack_status = stack['StackStatus']
             
             stacks[stack_name] = {
-                'CreationTime': stack['CreationTime'],
                 'StackStatus': stack_status,
                 'StackId': stack['StackId'],
                 'Description': None
@@ -42,7 +41,6 @@ def list_cloudformation_stacks(): #retrieve and display all cloudformation stack
             for stack in response.get('StackSummaries', []):
                 stack_name = stack['StackName']
                 stacks[stack_name] = {
-                    'CreationTime': stack['CreationTime'],
                     'StackStatus': stack['StackStatus'],
                     'StackId': stack['StackId'],
                     'Description': None  
@@ -85,7 +83,7 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
         return
         
     selected_stacks = select_from_list(list(stacks.keys()),
-                                       "Enter the numbers of the stacks you want to delete (comma-separated), or type 'all' to delete all:",)
+                                       "Enter the numbers of the stacks you want to delete (comma-separated), type 'all' to delete all or 'exit' to cancel: ",)
 
     if not selected_stacks:
         print("\n🚫 No valid stacks were selected for deletion.")
