@@ -55,11 +55,14 @@ def choose_method():  #choose a service and a method to execute
         return
     
     methods = list_all_methods(service)
-    chosen_method = select_from_list(methods, "Choose a method to use by index", False)
+    chosen_method = select_from_list(methods, "Choose a method to use by index or 'exit' to cancel: ", False)
     
     if chosen_method:
         execute_method(service, chosen_method[0])
-    
+    else:
+        print("\n🚫 No valid method was selected.")
+        return
+
 
 def execute_method(service_name, method_name): #execute the method u choose (and asks u for the parameters)
     try:
