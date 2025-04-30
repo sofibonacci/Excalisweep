@@ -174,7 +174,7 @@ def interactive_menu():
                 If the method requires parameters, enter them as a JSON string.
                 For example: {"name": "my-cluster"}
 
-                If the method is for deletion, it will log the action unless 'delete_for_real' is set to True.
+                If the method is for deletion, it will log the action.
 
             🔹 Option 4 - Exit:
                 Exits the AWS Service Explorer.
