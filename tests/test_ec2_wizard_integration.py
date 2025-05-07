@@ -54,10 +54,19 @@ def test_ec2_wizard_terminates_named_instance():
 
     assert "Successfully terminated" in final_output or "Logged terminate attempt" in final_output
 
-    # Wait a few seconds for AWS to update
-    time.sleep(5)
+# Wait for instance to reach 'terminated' state (polling every 5s, up to 60s)
+timeout = 60
+interval = 5
+elapsed = 0
+final_state = None
 
-    # Verify the instance is now terminated
+while elapsed < timeout:
     final_state = ec2_client.describe_instances(InstanceIds=[instance_id])
     instance_status = final_state["Reservations"][0]["Instances"][0]["State"]["Name"]
-    assert instance_status == "terminated", f"Instance not terminated, current state: {instance_status}"
+    if instance_status == "terminated":
+        break
+    print(f"Waiting for termination... current state: {instance_status}")
+    time.sleep(interval)
+    elapsed += interval
+
+assert instance_status == "terminated", f"Instance not terminated after {timeout}s, current state: {instance_status}"
