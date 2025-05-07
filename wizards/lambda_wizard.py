@@ -70,8 +70,12 @@ def delete_selected_lambda_functions():
     for idx, function in enumerate(function_list, start=1):
         print(f"{idx}. {function} (Created: {functions[function]['Created']})")
 
-    print("\nEnter the numbers of the Lambda functions you want to delete (comma-separated), or type 'all' to delete all:")
+    print("\nEnter the numbers of the Lambda functions you want to delete (comma-separated), type 'all' to delete all, or 'exit' to cancel:")
     choice = input("Your choice: ").strip().lower()
+
+    if choice == "exit":
+        print("❌ Deletion canceled by user.")
+        return
 
     if choice == "all":
         selected_functions = function_list
@@ -87,24 +91,25 @@ def delete_selected_lambda_functions():
         print("\nNo valid functions selected for deletion.")
         return
 
-    confirm = input(f"\nAre you sure you want to delete these {len(selected_functions)} Lambda function(s)? (yes/no): ").strip().lower()
-    if confirm == "yes":
-        for function in selected_functions:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            if config.delete_for_real:
-                # Delete the function and its resources
-                if delete_lambda_function(function, lambda_client):
-                    print(f"Successfully deleted Lambda function and resources: {function}")
-                    logger.log_deletion_attempt(function_name, "Lambda", True)
-                else:
-                    print(f"Failed to delete Lambda function: {function}. Skipping.")
-                    logger.log_deletion_attempt(function_name, "Lambda", False)
-            else:
-                log_action("Lambda", function, True, mode="deletion")
-
-                print(f"Logged delete attempt for: {function}")
-    else:
+    confirm = input(f"\nAre you sure you want to delete these {len(selected_functions)} Lambda function(s)? (yes/no/exit): ").strip().lower()
+    if confirm == "exit":
+        print("❌ Deletion canceled by user.")
+        return
+    elif confirm != "yes":
         print("Deletion canceled.")
+        return
+
+    for function in selected_functions:
+        if config.delete_for_real:
+            if delete_lambda_function(function, lambda_client):
+                print(f"✅ Successfully deleted Lambda function and resources: {function}")
+                log_action("Lambda", function, True, mode="deletion")
+            else:
+                print(f"❌ Failed to delete Lambda function: {function}. Skipping.")
+                log_action("Lambda", function, False, mode="deletion")
+        else:
+            print(f"📝 Logged delete attempt for: {function}")
+            log_action("Lambda", function, True, mode="deletion")
 
 def interactive_menu():
     print("""
