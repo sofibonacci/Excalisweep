@@ -53,20 +53,20 @@ def test_ec2_wizard_terminates_named_instance():
     print("Final output:\n", final_output)
 
     assert "Successfully terminated" in final_output or "Logged terminate attempt" in final_output
-
-# Wait for instance to reach 'terminated' state (polling every 5s, up to 60s)
-timeout = 180
-interval = 5
-elapsed = 0
-final_state = None
-
-while elapsed < timeout:
-    final_state = ec2_client.describe_instances(InstanceIds=[instance_id])
-    instance_status = final_state["Reservations"][0]["Instances"][0]["State"]["Name"]
-    if instance_status == "terminated":
-        break
-    print(f"Waiting for termination... current state: {instance_status}")
-    time.sleep(interval)
-    elapsed += interval
-
-assert instance_status == "terminated", f"Instance not terminated after {timeout}s, current state: {instance_status}"
+    
+    # Wait for instance to reach 'terminated' state (polling every 5s, up to 60s)
+    timeout = 180
+    interval = 5
+    elapsed = 0
+    final_state = None
+    
+    while elapsed < timeout:
+        final_state = ec2_client.describe_instances(InstanceIds=[instance_id])
+        instance_status = final_state["Reservations"][0]["Instances"][0]["State"]["Name"]
+        if instance_status == "terminated":
+            break
+        print(f"Waiting for termination... current state: {instance_status}")
+        time.sleep(interval)
+        elapsed += interval
+    
+    assert instance_status == "terminated", f"Instance not terminated after {timeout}s, current state: {instance_status}"
