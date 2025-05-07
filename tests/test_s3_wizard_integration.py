@@ -37,7 +37,7 @@ def test_s3_wizard_deletes_known_bucket():
     # Run the wizard again to delete the bucket
     delete_input = f"2\n{bucket_index}\nyes\n3\n"
     result = subprocess.run(
-        ["python", "s3_wizard.py"],
+        ["python", script_path],
         input=delete_input.encode(),
         capture_output=True,
         timeout=30
