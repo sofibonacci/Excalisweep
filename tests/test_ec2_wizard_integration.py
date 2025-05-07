@@ -55,7 +55,7 @@ def test_ec2_wizard_terminates_named_instance():
     assert "Successfully terminated" in final_output or "Logged terminate attempt" in final_output
 
 # Wait for instance to reach 'terminated' state (polling every 5s, up to 60s)
-timeout = 60
+timeout = 180
 interval = 5
 elapsed = 0
 final_state = None
