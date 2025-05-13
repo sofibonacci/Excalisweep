@@ -7,7 +7,7 @@ from wizards import ec2_wizard
 
 class TestEC2Wizard(unittest.TestCase):
 
-    @patch('ec2_wizard.boto3.client')
+    @patch('wizards.ec2_wizard.boto3.client')
     def test_list_ec2_instances_filters_terminated(self, mock_boto_client):
         mock_ec2_client = MagicMock()
         mock_boto_client.return_value = mock_ec2_client
@@ -41,10 +41,10 @@ class TestEC2Wizard(unittest.TestCase):
         self.assertEqual(result['i-123']['Status'], 'running')
         self.assertEqual(result['i-123']['Description'], 'TestInstance')
 
-    @patch('ec2_wizard.boto3.client')
-    @patch('ec2_wizard.input')
-    @patch('ec2_wizard.log_action')
-    @patch('ec2_wizard.config')
+    @patch('wizards.ec2_wizard.boto3.client')
+    @patch('wizards.ec2_wizard.input')
+    @patch('wizards.ec2_wizard.log_action')
+    @patch('wizards.ec2_wizard.config')
     def test_terminate_real(self, mock_config, mock_log_action, mock_input, mock_boto_client):
         mock_config.delete_for_real = True
         ec2_wizard.list_ec2_instances = MagicMock(return_value={
@@ -64,10 +64,10 @@ class TestEC2Wizard(unittest.TestCase):
         self.assertTrue(mock_ec2_client.terminate_instances.called)
         self.assertEqual(mock_ec2_client.terminate_instances.call_count, 1)
 
-    @patch('ec2_wizard.boto3.client')
-    @patch('ec2_wizard.input')
-    @patch('ec2_wizard.log_action')
-    @patch('ec2_wizard.config')
+    @patch('wizards.ec2_wizard.boto3.client')
+    @patch('wizards.ec2_wizard.input')
+    @patch('wizards.ec2_wizard.log_action')
+    @patch('wizards.ec2_wizard.config')
     def test_terminate_simulated(self, mock_config, mock_log_action, mock_input, mock_boto_client):
         mock_config.delete_for_real = False
         ec2_wizard.list_ec2_instances = MagicMock(return_value={
