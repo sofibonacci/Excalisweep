@@ -131,7 +131,7 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
 
 if __name__ == "__main__":
     run_interactive_menu(
-    "*   Welcome to ExcaliSweep Cloud Formation Wizard!  *\n*   Your Cloud Formation Stacks Cleanup Assistant   *",
+    "*   Welcome to ExcaliSweep Cloud Formation Wizard! *\n*   Your Cloud Formation Stacks Cleanup Assistant   *",
     [
         ("List CloudFormation Stacks and Status", list_cloudformation_stacks, False),
         ("Delete Stacks", delete_selected_stacks, False),
