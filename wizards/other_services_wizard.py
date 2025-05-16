@@ -139,7 +139,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
 if __name__ == "__main__":
     
     run_interactive_menu(
-    " * Welcome to AWS Service Explorer!      *\n* Your AWS Service and Method Assistant *",
+    "* Welcome to AWS Service Explorer!      *\n* Your AWS Service and Method Assistant *",
     [
         ("List AWS Services", list_services, False),
         ("Choose a Service and Method", choose_method, False),
