@@ -136,9 +136,7 @@ def select_from_list(item_list, prompt_message, allow_all=True):
 # ----------------------------------------- 
 
 def run_interactive_menu(title, options):
-    print(f"""*****************************************
-    {title}   
-    *****************************************""")
+    print(f"""*****************************************\n{title}\n*****************************************""")
 
     while True:
         print("\nMain Menu:")
