@@ -8,7 +8,7 @@ sleep 1
 python -m unittest discover -s tests -p "*unittest.py"
 
 echo "tests done!"
-sleep 1
+sleep 2
 
 #execute app
 python main.py
