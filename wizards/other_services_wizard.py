@@ -136,80 +136,10 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         print(f"{e}")
 
 
-def interactive_menu():  
-    print("""
-    *****************************************
-    *   Welcome to AWS Service Explorer!   *
-    *   Your AWS Service and Method Assistant   *
-    *****************************************
-    """)
-
-    while True:
-        print("\nMain Menu:")
-        print("1. List AWS Services")
-        print("2. Choose a Service and Method")
-        print("3. How to Use the AWS Service Explorer")
-        print("4. Exit")
-        choice = input("Enter your choice: ").strip()
-
-        if choice == "1":
-            services = list_services()
-        
-        elif choice == "2":
-            choose_method()
-
-        elif choice == "3":
-            print("""
-            🧙 HOW TO USE THE AWS Service Explorer
-
-            🔹 Option 1 - List AWS Services:
-                This will list the available AWS services.
-
-            🔹 Option 2 - Choose a Service and Method:
-                Choose an AWS service (e.g., s3, ec2, eks), then select a method.
-                The wizard will provide:
-                ✅ A short description of the method
-                ✅ Required parameters (if any)
-                ✅ An example of the response syntax
-                If the method requires parameters, enter them as a JSON string.
-                For example: {"name": "my-cluster"}
-
-                If the method is for deletion, it will log the action.
-
-            🔹 Option 4 - Exit:
-                Exits the AWS Service Explorer.
-
-            -------------------------------------------------------------
-            🎓 EXAMPLES USING EKS
-
-            🔹 Example 1 - Method with REQUIRED parameter:
-            👉 Service: eks
-            👉 Method: delete_cluster
-            👉 Required parameter: name (the name of your cluster)
-
-            📘 JSON input: {"name": "my-cluster"}
-
-            🔹 Example 2 - Method WITHOUT required parameters:
-            👉 Service: eks
-            👉 Method: list_clusters
-            👉 Required parameters: none
-
-            📘 Just press Enter when asked for JSON input
-
-            -------------------------------------------------------------
-            """)
-        
-        elif choice == "4":
-            print("\n🔚 Exiting AWS Service Explorer. Have a great day!")
-            break
-        
-        else:
-            print("\nInvalid choice. Please enter 1, 2, 3, or 4.")
-
 if __name__ == "__main__":
-    interactive_menu()
+    
     run_interactive_menu(
-    "Welcome to AWS Service Explorer!\nYour AWS Service and Method Assistant",
+    " * Welcome to AWS Service Explorer!      *\n* Your AWS Service and Method Assistant *",
     [
         ("List AWS Services", list_services, False),
         ("Choose a Service and Method", choose_method, False),
