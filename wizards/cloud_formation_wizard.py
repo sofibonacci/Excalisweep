@@ -159,5 +159,13 @@ def interactive_menu():
 
 if __name__ == "__main__":
     interactive_menu()
+    run_interactive_menu(
+    "Welcome to ExcaliSweep CloudFormation Wizard!\n*   Your CloudFormation Stacks Cleanup Assistant  *",
+    [
+        ("List CloudFormation Stacks and Status", list_cloudformation_stacks, False),
+        ("Delete Stacks", delete_selected_stacks, False),
+        ("Exit", None, True)
+    ]
+)
 
             

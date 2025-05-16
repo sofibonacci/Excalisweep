@@ -68,32 +68,32 @@ class TestAWSServiceExplorer(unittest.TestCase):
         mock_list_services.return_value = ['s3', 'ec2']
         mock_list_methods.return_value = ['list_buckets', 'delete_bucket']
         mock_select.return_value = ['list_buckets']
-
         explorer.choose_method()
-
         mock_execute.assert_called_once_with('s3', 'list_buckets')
 
+    @patch('builtins.print')
     @patch('builtins.input', return_value='invalid_service')
     @patch('wizards.other_services_wizard.list_services')
-    def test_choose_method_invalid_service(self, mock_list_services, mock_input):
+    def test_choose_method_invalid_service(self, mock_list_services, mock_input, mock_print):
         mock_list_services.return_value = ['s3', 'ec2']
-
-        explorer.choose_method()  
+        explorer.choose_method()
+        mock_print.assert_any_call("\nInvalid service name")
         
 
+    @patch('builtins.print')
     @patch('wizards.other_services_wizard.execute_method')
     @patch('wizards.other_services_wizard.select_from_list')
     @patch('builtins.input', return_value='s3')
     @patch('wizards.other_services_wizard.list_all_methods')
     @patch('wizards.other_services_wizard.list_services')
-    def test_choose_method_no_method_selected(self, mock_list_services, mock_list_methods, mock_input, mock_select, mock_execute):
+    def test_choose_method_no_method_selected(self, mock_list_services, mock_list_methods, mock_input, mock_select, mock_execute, mock_print):
         mock_list_services.return_value = ['s3']
         mock_list_methods.return_value = ['list_buckets', 'delete_bucket']
         mock_select.return_value = None  
-
         explorer.choose_method()
-
         mock_execute.assert_not_called()
+        mock_print.assert_any_call("\n🚫 No valid method was selected.")
+
 
 
 if __name__ == '__main__':
