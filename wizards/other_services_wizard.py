@@ -93,6 +93,9 @@ def execute_method(service_name, method_name): #execute the method u choose (and
                 except json.JSONDecodeError:
                     print("\n❌ Invalid JSON format. Aborting execution.")
                     return
+            else:
+                print("\n❌ No parameters provided. Aborting execution.")
+                return
         
         print(f"\nExecuting {service_name}.{method_name}()...\n")
         delete=any(word in method_name.lower() for word in ["delete", "terminate", "remove", "drop", "destroy", "purge"])
