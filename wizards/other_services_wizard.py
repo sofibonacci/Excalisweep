@@ -86,16 +86,18 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         params_dict = {}
     
         if matches:
-            params = input('\nEnter parameters as a JSON string (ex. {"key": "value"}): ').strip()
-            if params:
-                try:
-                    params_dict = json.loads(params)
-                except json.JSONDecodeError:
-                    print("\n❌ Invalid JSON format. Aborting execution.")
+            print("\n📥 Please provide values for the required parameters:")
+            for param in matches:
+                value = input(f"  🔹 {param}: ").strip()
+                
+                if not value:
+                    print(f"\n❌ No value provided for required parameter '{param}'. Aborting execution.")
                     return
-            else:
-                print("\n❌ No parameters provided. Aborting execution.")
-                return
+                
+                try:
+                    params_dict[param] = json.loads(value)
+                except json.JSONDecodeError:
+                    params_dict[param] = value
         
         print(f"\nExecuting {service_name}.{method_name}()...\n")
         delete=any(word in method_name.lower() for word in ["delete", "terminate", "remove", "drop", "destroy", "purge"])
