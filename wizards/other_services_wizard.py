@@ -75,11 +75,10 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         pattern_response = r'(\bresponse\s*=\s*client\.[\w_]+\([^)]*\))'
         response_syntax = re.findall(pattern_response, docstring)
         pattern_required  = r':param (\w+):\s+\*\*\[REQUIRED\]\*\*'
-        #required_params = re.findall(pattern_required , docstring)
-        
+        required_params = re.findall(pattern_required , docstring)
         pattern_all_params = r':param (\w+):'
-        required_params = re.findall(pattern_required, docstring) if docstring else []
-        all_params = list(dict.fromkeys(re.findall(pattern_all_params, docstring))) 
+        all_params = re.findall(pattern_all_params, docstring)
+        print(f"\n📦 All Parameters: {', '.join(all_params)}")
         optional_params = [p for p in all_params if p not in required_params]
         
         print(f"\n🛠️ Method: {method_name}")
