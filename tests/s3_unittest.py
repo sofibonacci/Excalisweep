@@ -30,8 +30,9 @@ class TestS3Wizard(unittest.TestCase):
         # Mock list_objects_v2 for status detection
         def mock_list_objects_v2(Bucket):
             if Bucket == 'active-bucket':
-                return {'Contents': [{'Key': 'file.txt'}]}  # simulate non-empty
-            return {}
+                return {'Contents': [{'Key': 'somefile.txt'}]}  # <-- simulate a non-empty bucket
+            return {}  # simulate empty bucket for others
+
 
         mock_s3_client.get_bucket_tagging.side_effect = mock_get_bucket_tagging
         mock_s3_client.list_objects_v2.side_effect = mock_list_objects_v2
