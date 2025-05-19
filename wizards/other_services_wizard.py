@@ -78,7 +78,6 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         required_params = re.findall(pattern_required , docstring)
         pattern_all_params = r':param (\w+):'
         all_params = re.findall(pattern_all_params, docstring)
-        print(f"\n📦 All Parameters: {', '.join(all_params)}")
         optional_params = [p for p in all_params if p not in required_params]
         
         print(f"\n🛠️ Method: {method_name}")
@@ -102,6 +101,17 @@ def execute_method(service_name, method_name): #execute the method u choose (and
                     params_dict[param] = json.loads(value)
                 except json.JSONDecodeError:
                     params_dict[param] = value
+        
+        if optional_params:
+            print("\n📥 Please provide values for the optional parameters (or leave blank):")
+            for param in optional_params:
+                value = input(f"  🔹 {param}: ").strip()
+                
+                if value:
+                    try:
+                        params_dict[param] = json.loads(value)
+                    except json.JSONDecodeError:
+                        params_dict[param] = value
         
         print(f"\nExecuting {service_name}.{method_name}()...\n")
         delete=any(word in method_name.lower() for word in ["delete", "terminate", "remove", "drop", "destroy", "purge"])
