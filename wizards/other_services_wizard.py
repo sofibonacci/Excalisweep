@@ -84,7 +84,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         print(f"\n📄 Description:{lines[0]}" if docstring else "No description available.\n")
         print(f"\n📦 Response Syntax:\n\n {response_syntax[0]}\n" if response_syntax else "\nNo response syntax available.\n")
         print(f"{'⚠️ Required Parameters: ' + ', '.join(required_params) if required_params else '✅ This method does not require any parameters.'}")
-        print(f"{'📌 Optional Parameters: ' + ', '.join(optional_params) if optional_params else ''}")
+        print(f"{'📌 Optional Parameters: ' + ', '.join(optional_params) if optional_params else 'This method does not have any parameters'}")
         
         params_dict = {}
     
@@ -106,7 +106,6 @@ def execute_method(service_name, method_name): #execute the method u choose (and
             print("\n📥 Please provide values for the optional parameters (or leave blank):")
             for param in optional_params:
                 value = input(f"  🔹 {param}: ").strip()
-                
                 if value:
                     try:
                         params_dict[param] = json.loads(value)
@@ -114,6 +113,8 @@ def execute_method(service_name, method_name): #execute the method u choose (and
                         params_dict[param] = value
         
         print(f"\nExecuting {service_name}.{method_name}()...\n")
+        print(f"\nParameters: {params_dict}")
+        
         delete=any(word in method_name.lower() for word in ["delete", "terminate", "remove", "drop", "destroy", "purge"])
         if delete:
             if config.delete_for_real:
