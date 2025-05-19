@@ -68,26 +68,27 @@ def execute_method(service_name, method_name): #execute the method u choose (and
     try:
         client = boto3.client(service_name)
         method = getattr(client, method_name)
-        signature = inspect.signature(method)
-        docstring = inspect.getdoc(method).split('\n')
+        docstring = inspect.getdoc(method)
+        lines= docstring.split('\n')
         
         #regex
         pattern_response = r'(\bresponse\s*=\s*client\.[\w_]+\([^)]*\))'
+        response_syntax = re.findall(pattern_response, docstring)
         pattern_params = r':param (\w+):\s+\*\*\[REQUIRED\]\*\*'
-        
-        #regex matches
-        matches = re.findall(pattern_params, inspect.getdoc(method))
-        match = re.findall(pattern_response, inspect.getdoc(method))
+        required_params = re.findall(pattern_params, docstring)
         
         print(f"\n🛠️ Method: {method_name}")
-        print(f"\n📄 Description:{docstring[0]}" if docstring else "No description available.\n")
-        print(f"\n📦 Response Syntax:\n\n {match[0]}\n" if match else "\nNo response syntax available.\n")
-        print(f"{'⚠️ Required Parameters: ' + ', '.join(matches) if matches else '✅ This method does not require any parameters.'}")
+        print(f"\n📄 Description:{lines[0]}" if docstring else "No description available.\n")
+        print(f"\n📦 Response Syntax:\n\n {response_syntax[0]}\n" if response_syntax else "\nNo response syntax available.\n")
+        print(f"{'⚠️ Required Parameters: ' + ', '.join(required_params) if required_params else '✅ This method does not require any parameters.'}")
+        raw_params = response_syntax.group(1)
+        param_lines = [line.strip().rstrip(',') for line in raw_params.split('\n') if line.strip()]
+        print(param_lines)
         params_dict = {}
     
-        if matches:
+        if required_params:
             print("\n📥 Please provide values for the required parameters:")
-            for param in matches:
+            for param in required_params:
                 value = input(f"  🔹 {param}: ").strip()
                 
                 if not value:
