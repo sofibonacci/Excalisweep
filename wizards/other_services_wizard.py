@@ -175,7 +175,6 @@ if __name__ == "__main__":
             👉 Method: list_clusters
             👉 Required parameters: none
 
-            📘 Just press Enter when asked for JSON input
 
             -------------------------------------------------------------
         """), False),
