@@ -74,16 +74,20 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         #regex
         pattern_response = r'(\bresponse\s*=\s*client\.[\w_]+\([^)]*\))'
         response_syntax = re.findall(pattern_response, docstring)
-        pattern_params = r':param (\w+):\s+\*\*\[REQUIRED\]\*\*'
-        required_params = re.findall(pattern_params, docstring)
+        pattern_required  = r':param (\w+):\s+\*\*\[REQUIRED\]\*\*'
+        #required_params = re.findall(pattern_required , docstring)
+        
+        pattern_all_params = r':param (\w+):'
+        required_params = re.findall(pattern_required, docstring) if docstring else []
+        all_params = list(dict.fromkeys(re.findall(pattern_all_params, docstring))) 
+        optional_params = [p for p in all_params if p not in required_params]
         
         print(f"\n🛠️ Method: {method_name}")
         print(f"\n📄 Description:{lines[0]}" if docstring else "No description available.\n")
         print(f"\n📦 Response Syntax:\n\n {response_syntax[0]}\n" if response_syntax else "\nNo response syntax available.\n")
         print(f"{'⚠️ Required Parameters: ' + ', '.join(required_params) if required_params else '✅ This method does not require any parameters.'}")
-        raw_params = response_syntax.group(1)
-        param_lines = [line.strip().rstrip(',') for line in raw_params.split('\n') if line.strip()]
-        print(param_lines)
+        print(f"{'📌 Optional Parameters: ' + ', '.join(optional_params) if optional_params else ''}")
+        
         params_dict = {}
     
         if required_params:
