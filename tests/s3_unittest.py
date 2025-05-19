@@ -39,22 +39,23 @@ class TestS3Wizard(unittest.TestCase):
         self.assertIn('empty-bucket', result)
         self.assertEqual(result['active-bucket']['Status'], 'Active')
         self.assertEqual(result['empty-bucket']['Status'], 'Inactive')
-
+        
+    @patch('wizards.s3_wizard.list_s3_buckets')
     @patch('wizards.s3_wizard.boto3.client')
     @patch('wizards.s3_wizard.input')
     @patch('wizards.s3_wizard.log_action')
     @patch('wizards.s3_wizard.config')
+
     def test_delete_real(self, mock_config, mock_log_action, mock_input, mock_boto_client):
         mock_config.delete_for_real = True
         mock_input.side_effect = ['1', 'yes']
 
         mock_s3_client = MagicMock()
         mock_boto_client.return_value = mock_s3_client
-
-        s3_wizard.list_s3_buckets = MagicMock(return_value={
-            'test-bucket': {'Status': 'Inactive', 'Description': 'To delete', 'CreationDate': '2022-01-01T00:00:00Z'}
-        })
-
+        mock_list_buckets.return_value = {
+        'test-bucket': {'Status': 'Inactive', 'Description': 'Test bucket', 'CreationDate': '2022-01-01T00:00:00Z'}
+        }
+    
         mock_s3_client.list_objects_v2.return_value = {}
         mock_s3_client.list_object_versions.return_value = {}
 
@@ -63,6 +64,7 @@ class TestS3Wizard(unittest.TestCase):
         mock_s3_client.delete_bucket.assert_called_once_with(Bucket='test-bucket')
         mock_log_action.assert_called_with('test-bucket', 'S3', True)
 
+    @patch('wizards.s3_wizard.list_s3_buckets')
     @patch('wizards.s3_wizard.boto3.client')
     @patch('wizards.s3_wizard.input')
     @patch('wizards.s3_wizard.log_action')
@@ -70,16 +72,12 @@ class TestS3Wizard(unittest.TestCase):
     def test_delete_simulated(self, mock_config, mock_log_action, mock_input, mock_boto_client):
         mock_config.delete_for_real = False
         mock_input.side_effect = ['1', 'yes']
-
+        mock_list_buckets.return_value = {
+        'simulated-bucket': {'Status': 'Inactive', 'Description': 'Simulated', 'CreationDate': '2022-01-01T00:00:00Z'}
+        }
         mock_s3_client = MagicMock()
         mock_boto_client.return_value = mock_s3_client
-
-        s3_wizard.list_s3_buckets = MagicMock(return_value={
-            'simulated-bucket': {'Status': 'Inactive', 'Description': 'Simulated', 'CreationDate': '2022-01-01T00:00:00Z'}
-        })
-
         s3_wizard.delete_selected_buckets()
-
         mock_s3_client.delete_bucket.assert_not_called()
         mock_log_action.assert_called_once_with('S3', 'simulated-bucket', True, mode='deletion')
 
