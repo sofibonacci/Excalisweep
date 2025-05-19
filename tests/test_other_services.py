@@ -96,71 +96,70 @@ class TestAWSServiceExplorer(unittest.TestCase):
         mock_execute.assert_not_called()
         mock_print.assert_any_call("\n🚫 No valid method was selected.")
 
-@patch('builtins.input', return_value='')  
-@patch('wizards.other_services_wizard.log_action')
-@patch('boto3.client')
-def test_execute_method_no_required_params(mock_boto3_client, mock_log, mock_input):
-    mock_method = MagicMock()
-    mock_method.return_value = {
-        "ResponseMetadata": {"HTTPStatusCode": 200},
-        "Data": "test"
-    }
+    @patch('builtins.input', return_value='{}')  
+    @patch('wizards.other_services_wizard.log_action')
+    @patch('boto3.client')
+    def test_execute_method_no_required_params(self, mock_boto3_client, mock_log, mock_input):
+        mock_method = MagicMock()
+        mock_method.return_value = {
+            "ResponseMetadata": {"HTTPStatusCode": 200},
+            "Data": "test"
+        }
+        
+        mock_client = MagicMock()
+        mock_client.some_method = mock_method
+        mock_boto3_client.return_value = mock_client
+        
+        with patch('inspect.getdoc', return_value=':param something: **[REQUIRED]**\nresponse = client.some_method()'):
+            with patch('inspect.signature') as mock_signature:
+                mock_signature.return_value.parameters = {}  # No required params
+                explorer.execute_method('s3', 'some_method')
+                mock_method.assert_called_once()
+                
+    @patch('builtins.input', return_value='{"Bucket": "test-bucket"}')
+    @patch('wizards.other_services_wizard.config.delete_for_real', False)
+    @patch('wizards.other_services_wizard.log_action')
+    @patch('boto3.client')
+    def test_execute_destructive_method_fake_delete(self, mock_boto3_client, mock_log, mock_input):
+        mock_method = MagicMock()
+        mock_client = MagicMock()
+        mock_client.delete_bucket = mock_method
+        mock_boto3_client.return_value = mock_client
+
+        with patch('inspect.getdoc', return_value=':param Bucket: **[REQUIRED]**\nresponse = client.delete_bucket()'):
+            with patch('inspect.signature') as mock_signature:
+                mock_signature.return_value.parameters = {"Bucket": MagicMock(default=inspect.Parameter.empty)}
+                explorer.execute_method('s3', 'delete_bucket')
+                mock_method.assert_not_called()
+                mock_log.assert_called_once()
     
-    mock_client = MagicMock()
-    mock_client.some_method = mock_method
-    mock_boto3_client.return_value = mock_client
-    
-    with patch('inspect.getdoc', return_value=':param something: **[REQUIRED]**\nresponse = client.some_method()'):
-        with patch('inspect.signature') as mock_signature:
-            mock_signature.return_value.parameters = {}  # No required params
-            explorer.execute_method('s3', 'some_method')
-            mock_method.assert_called_once()
-            
-@patch('builtins.input', return_value='{"Bucket": "test-bucket"}')
-@patch('wizards.other_services_wizard.config.delete_for_real', False)
-@patch('wizards.other_services_wizard.log_action')
-@patch('boto3.client')
-def test_execute_destructive_method_fake_delete(mock_boto3_client, mock_log, mock_input):
-    mock_method = MagicMock()
-    mock_client = MagicMock()
-    mock_client.delete_bucket = mock_method
-    mock_boto3_client.return_value = mock_client
+    @patch('builtins.input', return_value='{"Key": "value"}')
+    @patch('boto3.client')
+    def test_execute_method_with_exception(self, mock_boto3_client, mock_input):
+        mock_method = MagicMock(side_effect=Exception("API error"))
+        mock_client = MagicMock()
+        mock_client.fail_method = mock_method
+        mock_boto3_client.return_value = mock_client
 
-    with patch('inspect.getdoc', return_value=':param Bucket: **[REQUIRED]**\nresponse = client.delete_bucket()'):
-        with patch('inspect.signature') as mock_signature:
-            mock_signature.return_value.parameters = {"Bucket": MagicMock(default=inspect.Parameter.empty)}
-            explorer.execute_method('s3', 'delete_bucket')
-            mock_method.assert_not_called()
-            mock_log.assert_called_once()
-  
-@patch('builtins.input', return_value='{"Key": "value"}')
-@patch('boto3.client')
-def test_execute_method_with_exception(mock_boto3_client, mock_input):
-    mock_method = MagicMock(side_effect=Exception("API error"))
-    mock_client = MagicMock()
-    mock_client.fail_method = mock_method
-    mock_boto3_client.return_value = mock_client
+        with patch('inspect.getdoc', return_value=':param Key: **[REQUIRED]**'):
+            with patch('inspect.signature') as mock_signature:
+                mock_signature.return_value.parameters = {"Key": MagicMock(default=inspect.Parameter.empty)}
+                explorer.execute_method('s3', 'fail_method')
+                mock_method.assert_called_once()
 
-    with patch('inspect.getdoc', return_value=':param Key: **[REQUIRED]**'):
-        with patch('inspect.signature') as mock_signature:
-            mock_signature.return_value.parameters = {"Key": MagicMock(default=inspect.Parameter.empty)}
-            explorer.execute_method('s3', 'fail_method')
-            mock_method.assert_called_once()
+    @patch('builtins.input', return_value='invalid_json')
+    @patch('boto3.client')
+    def test_execute_method_invalid_json(self, mock_boto3_client, mock_input):
+        mock_method = MagicMock()
+        mock_client = MagicMock()
+        mock_client.some_method = mock_method
+        mock_boto3_client.return_value = mock_client
 
-@patch('builtins.input', return_value='invalid_json')
-@patch('boto3.client')
-def test_execute_method_invalid_json(mock_boto3_client, mock_input):
-    mock_method = MagicMock()
-    mock_client = MagicMock()
-    mock_client.some_method = mock_method
-    mock_boto3_client.return_value = mock_client
-
-    with patch('inspect.getdoc', return_value=':param Key: **[REQUIRED]**'):
-        with patch('inspect.signature') as mock_signature:
-            mock_signature.return_value.parameters = {"Key": MagicMock(default=inspect.Parameter.empty)}
-            from wizards.other_services_wizard import execute_method
-            execute_method('s3', 'some_method')
-            mock_method.assert_not_called()
+        with patch('inspect.getdoc', return_value=':param Key: **[REQUIRED]**'):
+            with patch('inspect.signature') as mock_signature:
+                mock_signature.return_value.parameters = {"Key": MagicMock(default=inspect.Parameter.empty)}
+                explorer.execute_method('s3', 'some_method')
+                mock_method.assert_not_called()
 
 if __name__ == '__main__':
     unittest.main()
