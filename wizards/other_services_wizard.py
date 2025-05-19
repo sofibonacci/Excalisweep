@@ -92,11 +92,9 @@ def execute_method(service_name, method_name): #execute the method u choose (and
             print("\n📥 Please provide values for the required parameters:")
             for param in required_params:
                 value = input(f"  🔹 {param}: ").strip()
-                
                 if not value:
                     print(f"\n❌ No value provided for required parameter '{param}'. Aborting execution.")
                     return
-                
                 try:
                     params_dict[param] = json.loads(value)
                 except json.JSONDecodeError:
@@ -113,7 +111,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
                         params_dict[param] = value
         
         print(f"\nExecuting {service_name}.{method_name}()...\n")
-        print(f"\nParameters: {params_dict}")
+        print(f"\nParameters:  {json.dumps(params_dict, indent=2)}")
         
         delete=any(word in method_name.lower() for word in ["delete", "terminate", "remove", "drop", "destroy", "purge"])
         if delete:
@@ -167,10 +165,13 @@ if __name__ == "__main__":
                 Choose an AWS service (e.g., s3, ec2, eks), then select a method.
                 The wizard will provide:
                 ✅ A short description of the method
-                ✅ Required parameters (if any)
+                ✅ Required & optional parameters
                 ✅ An example of the response syntax
-                If the method requires parameters, enter them as a JSON string.
-                For example: {"name": "my-cluster"}
+                
+                You'll be prompted to input parameters:
+                - Required: Must be entered
+                - Optional: Can be skipped
+                ⚠️ Enter them using **valid JSON** (e.g., lists as ["item1", "item2"])
 
                 If the method is for deletion, it will log the action.
 
@@ -183,15 +184,16 @@ if __name__ == "__main__":
             🔹 Example 1 - Method with REQUIRED parameter:
             👉 Service: eks
             👉 Method: delete_cluster
-            👉 Required parameter: name (the name of your cluster)
+            👉 Required parameter: name
 
-            📘 JSON input: {"name": "my-cluster"}
+            📘 JSON input: "my-cluster"
 
-            🔹 Example 2 - Method WITHOUT required parameters:
-            👉 Service: eks
-            👉 Method: list_clusters
-            👉 Required parameters: none
+            🔹 Example 2 - Method with optional parameters:
+            👉 Service: cloudformation
+            👉 Method: list_stacks
+            👉 Optional: StackStatusFilter
 
+            📘 JSON input: ["CREATE_IN_PROGRESS", "UPDATE_COMPLETE"]
 
             -------------------------------------------------------------
         """), False),
