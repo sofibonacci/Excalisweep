@@ -68,39 +68,51 @@ def execute_method(service_name, method_name): #execute the method u choose (and
     try:
         client = boto3.client(service_name)
         method = getattr(client, method_name)
-        signature = inspect.signature(method)
-        docstring = inspect.getdoc(method).split('\n')
+        docstring = inspect.getdoc(method)
+        lines= docstring.split('\n')
         
         #regex
         pattern_response = r'(\bresponse\s*=\s*client\.[\w_]+\([^)]*\))'
-        pattern_params = r':param (\w+):\s+\*\*\[REQUIRED\]\*\*'
-        
-        #regex matches
-        matches = re.findall(pattern_params, inspect.getdoc(method))
-        match = re.findall(pattern_response, inspect.getdoc(method))
-        
-        required_params = [param for param, details in signature.parameters.items() if details.default == inspect.Parameter.empty]
+        response_syntax = re.findall(pattern_response, docstring)
+        pattern_required  = r':param (\w+):\s+\*\*\[REQUIRED\]\*\*'
+        required_params = re.findall(pattern_required , docstring)
+        pattern_all_params = r':param (\w+):'
+        all_params = re.findall(pattern_all_params, docstring)
+        optional_params = [p for p in all_params if p not in required_params]
         
         print(f"\n🛠️ Method: {method_name}")
-        print(f"\n📄 Description:{docstring[0]}" if docstring else "No description available.\n")
-        print(f"\n📦 Response Syntax:\n\n {match[0]}\n" if match else "\nNo response syntax available.\n")
-        print(f"{'⚠️ Required Parameters: ' + ', '.join(matches) if matches else '✅ This method does not require any parameters.'}")
-
-    
+        print(f"\n📄 Description:{lines[0]}" if docstring else "No description available.\n")
+        print(f"\n📦 Response Syntax:\n\n {response_syntax[0]}\n" if response_syntax else "\nNo response syntax available.\n")
+        print(f"{'⚠️ Required Parameters: ' + ', '.join(required_params) if required_params else '✅ This method does not require any parameters.'}")
+        print(f"{'📌 Optional Parameters: ' + ', '.join(optional_params) if optional_params else 'This method does not have any parameters'}")
+        
+        params_dict = {}
     
         if required_params:
-            params = input('\nEnter parameters as a JSON string (ex. {"key": "value"}): ').strip()
-            params_dict = {}
-            if params:
-                try:
-                    params_dict = json.loads(params)
-                except json.JSONDecodeError:
-                    print("\n❌ Invalid JSON format. Aborting execution.")
+            print("\n📥 Please provide values for the required parameters:")
+            for param in required_params:
+                value = input(f"  🔹 {param}: ").strip()
+                if not value:
+                    print(f"\n❌ No value provided for required parameter '{param}'. Aborting execution.")
                     return
-        else:
-            print("\nNo required parameters needed.")
+                try:
+                    params_dict[param] = json.loads(value)
+                except json.JSONDecodeError:
+                    params_dict[param] = value
+        
+        if optional_params:
+            print("\n📥 Please provide values for the optional parameters (or leave blank):")
+            for param in optional_params:
+                value = input(f"  🔹 {param}: ").strip()
+                if value:
+                    try:
+                        params_dict[param] = json.loads(value)
+                    except json.JSONDecodeError:
+                        params_dict[param] = value
         
         print(f"\nExecuting {service_name}.{method_name}()...\n")
+        print(f"\nParameters:  {json.dumps(params_dict, indent=2)}")
+        
         delete=any(word in method_name.lower() for word in ["delete", "terminate", "remove", "drop", "destroy", "purge"])
         if delete:
             if config.delete_for_real:
@@ -136,30 +148,14 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         print(f"{e}")
 
 
-def interactive_menu():  
-    print("""
-    *****************************************
-    *   Welcome to AWS Service Explorer!   *
-    *   Your AWS Service and Method Assistant   *
-    *****************************************
-    """)
-
-    while True:
-        print("\nMain Menu:")
-        print("1. List AWS Services")
-        print("2. Choose a Service and Method")
-        print("3. How to Use the AWS Service Explorer")
-        print("4. Exit")
-        choice = input("Enter your choice: ").strip()
-
-        if choice == "1":
-            services = list_services()
-        
-        elif choice == "2":
-            choose_method()
-
-        elif choice == "3":
-            print("""
+if __name__ == "__main__":
+    
+    run_interactive_menu(
+    "* Welcome to AWS Service Explorer!      *\n* Your AWS Service and Method Assistant *",
+    [
+        ("List AWS Services", list_services, False),
+        ("Choose a Service and Method", choose_method, False),
+        ("How to Use the AWS Service Explorer", lambda: print("""
             🧙 HOW TO USE THE AWS Service Explorer
 
             🔹 Option 1 - List AWS Services:
@@ -169,10 +165,13 @@ def interactive_menu():
                 Choose an AWS service (e.g., s3, ec2, eks), then select a method.
                 The wizard will provide:
                 ✅ A short description of the method
-                ✅ Required parameters (if any)
+                ✅ Required & optional parameters
                 ✅ An example of the response syntax
-                If the method requires parameters, enter them as a JSON string.
-                For example: {"name": "my-cluster"}
+                
+                You'll be prompted to input parameters:
+                - Required: Must be entered
+                - Optional: Can be skipped
+                ⚠️ Enter them using **valid JSON** (e.g., lists as ["item1", "item2"])
 
                 If the method is for deletion, it will log the action.
 
@@ -185,26 +184,20 @@ def interactive_menu():
             🔹 Example 1 - Method with REQUIRED parameter:
             👉 Service: eks
             👉 Method: delete_cluster
-            👉 Required parameter: name (the name of your cluster)
+            👉 Required parameter: name
 
-            📘 JSON input: {"name": "my-cluster"}
+            📘 JSON input: "my-cluster"
 
-            🔹 Example 2 - Method WITHOUT required parameters:
-            👉 Service: eks
-            👉 Method: list_clusters
-            👉 Required parameters: none
+            🔹 Example 2 - Method with optional parameters:
+            👉 Service: cloudformation
+            👉 Method: list_stacks
+            👉 Optional: StackStatusFilter
 
-            📘 Just press Enter when asked for JSON input
+            📘 JSON input: ["CREATE_IN_PROGRESS", "UPDATE_COMPLETE"]
 
             -------------------------------------------------------------
-            """)
-        
-        elif choice == "4":
-            print("\n🔚 Exiting AWS Service Explorer. Have a great day!")
-            break
-        
-        else:
-            print("\nInvalid choice. Please enter 1, 2, 3, or 4.")
+        """), False),
 
-if __name__ == "__main__":
-    interactive_menu()
+        ("Exit", None, True),
+    ]
+)

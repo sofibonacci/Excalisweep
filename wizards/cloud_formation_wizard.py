@@ -127,37 +127,16 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
     except Exception as e:
         print(f"❌ Unexpected error: {e}")
             
-def interactive_menu():
-    print("""
-    *****************************************
-    *   Welcome to ExcaliSweep Cloud Formation Wizard!   *
-    *   Your Cloud Formation Stacks Cleanup Assistant   *
-    *****************************************
-""")
 
-    while True:
-        #add choice to show logs
-        print("\nMain Menu:")
-        print("1. List Cloud Formation Stacks and Status")
-        print("2. Delete Stacks")
-        print("3. Exit")
-        choice = input("Enter your choice: ").strip()
-
-        if choice == "1":
-            print("Waiting for stacks...")
-            list_cloudformation_stacks()
-        
-        elif choice == "2":
-            delete_selected_stacks()
-
-        elif choice == "3":
-            print("\n🔚 Exiting Excalisweep CloudFormation Wizard. Have a great day!")
-            break
-        
-        else:
-            print("\nInvalid choice. Please enter 1, 2, or 3.")
 
 if __name__ == "__main__":
-    interactive_menu()
+    run_interactive_menu(
+    "*   Welcome to ExcaliSweep Cloud Formation Wizard!  *\n*   Your Cloud Formation Stacks Cleanup Assistant   *",
+    [
+        ("List CloudFormation Stacks and Status", list_cloudformation_stacks, False),
+        ("Delete Stacks", delete_selected_stacks, False),
+        ("Exit", None, True)
+    ]
+)
 
             
