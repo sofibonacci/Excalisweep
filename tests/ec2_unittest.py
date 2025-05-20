@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from wizards import ec2_wizard 
 
 class TestEC2Wizard(BaseTestCase):
-
+    patch_path = 'wizards.ec2_wizard.boto3.client'
     def test_list_ec2_instances_filters_terminated(self):
         # Creates mock instance using function from parent class 
         running_instance = self.create_resource(
