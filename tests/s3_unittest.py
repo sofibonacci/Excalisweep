@@ -1,10 +1,12 @@
 # test_s3_wizard.py
-
-import unittest
-from unittest.mock import patch, MagicMock
 from datetime import datetime
-from s3_wizard import list_s3_buckets, empty_bucket
+import unittest
 from test_fixtures import BaseTestCase
+from unittest.mock import patch, MagicMock
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from wizards import s3_wizard  
 
 class TestS3Wizard(BaseTestCase):
     def setUp(self):
@@ -32,7 +34,7 @@ class TestS3Wizard(BaseTestCase):
             {}  # no objects
         ]
 
-        buckets = list_s3_buckets()
+        buckets = s3_wizard.list_s3_buckets()
         self.assertEqual(len(buckets), 2)
 
         self.assertEqual(buckets['test-bucket-1']['Description'], 'Test bucket 1')
@@ -57,7 +59,7 @@ class TestS3Wizard(BaseTestCase):
             ]
         }
 
-        success = empty_bucket("test-bucket")
+        success = s3_wizard.empty_bucket("test-bucket")
         self.assertTrue(success)
         mock_s3.delete_objects.assert_called()
 
@@ -69,7 +71,7 @@ class TestS3Wizard(BaseTestCase):
         mock_s3.list_objects_v2.side_effect = Exception("Something went wrong")
 
         with patch("s3_wizard.log_action") as mock_log:
-            success = empty_bucket("error-bucket")
+            success = s3_wizard.empty_bucket("error-bucket")
             self.assertFalse(success)
             mock_log.assert_called_once_with("S3", "error-bucket", False, mode="deletion")
 
