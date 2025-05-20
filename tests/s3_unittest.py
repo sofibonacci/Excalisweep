@@ -9,39 +9,37 @@ from wizards import s3_wizard
 
 
 class TestS3Wizard(unittest.TestCase):
-
+    
     @patch('wizards.s3_wizard.boto3.client')
     def test_list_s3_buckets_filters_active_and_inactive(self, mock_boto_client):
         mock_s3_client = MagicMock()
         mock_boto_client.return_value = mock_s3_client
-
-        # Mock list_buckets
+    
         mock_s3_client.list_buckets.return_value = {
             'Buckets': [
                 {'Name': 'active-bucket', 'CreationDate': datetime(2022, 1, 1)},
                 {'Name': 'empty-bucket', 'CreationDate': datetime(2022, 1, 2)},
             ]
         }
-
-        # Mock get_bucket_tagging
+    
         def mock_get_bucket_tagging(Bucket):
-            return {'TagSet': [{'Key': 'Description', 'Value': f'Description for {Bucket}'}]}
-
-        # Mock list_objects_v2 for status detection
-        def mock_list_objects_v2(Bucket):
             if Bucket == 'active-bucket':
-                return {'Contents': [{'Key': 'somefile.txt'}]}  # simulate a non-empty bucket
-            return {}  # simulate empty bucket
-
+                return {'TagSet': [{'Key': 'Description', 'Value': 'Active Bucket'}]}
+            elif Bucket == 'empty-bucket':
+                return {'TagSet': []}
+        
+        def mock_list_objects_v2(Bucket):
+            return {'Contents': [{'Key': 'file.txt'}]} if Bucket == 'active-bucket' else {}
+    
         mock_s3_client.get_bucket_tagging.side_effect = mock_get_bucket_tagging
         mock_s3_client.list_objects_v2.side_effect = mock_list_objects_v2
-
+    
         result = s3_wizard.list_s3_buckets()
-
-        self.assertIsInstance(result, dict)
+        self.assertIn('active-bucket', result)
+        self.assertIn('empty-bucket', result)
         self.assertEqual(result['active-bucket']['Status'], 'Active')
         self.assertEqual(result['empty-bucket']['Status'], 'Inactive ❌')
-
+    
     @patch('wizards.s3_wizard.boto3.client')
     @patch('wizards.s3_wizard.input')
     @patch('wizards.s3_wizard.log_action')
@@ -73,7 +71,7 @@ class TestS3Wizard(unittest.TestCase):
             'active-bucket': {'Status': 'Active', 'Description': 'Desc', 'CreationDate': datetime(2022, 1, 1)}
         })
 
-        mock_input.side_effect = ['1']
+        mock_input.side_effect = ['1', 'no', 'exit']
         mock_s3_client = MagicMock()
         mock_boto_client.return_value = mock_s3_client
 
