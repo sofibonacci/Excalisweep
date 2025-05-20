@@ -1,36 +1,44 @@
-import unittest
-from unittest.mock import patch, MagicMock
+from test_fixtures import BaseTestCase
+from unittest.mock import MagicMock
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from wizards import ec2_wizard  
+from wizards import ec2_wizard 
 
-class TestEC2Wizard(unittest.TestCase):
+class TestEC2Wizard(BaseTestCase):
 
-    @patch('wizards.ec2_wizard.boto3.client')
-    def test_list_ec2_instances_filters_terminated(self, mock_boto_client):
-        mock_ec2_client = MagicMock()
-        mock_boto_client.return_value = mock_ec2_client
+    def test_list_ec2_instances_filters_terminated(self):
+        # Creates mock instance using function from parent class 
+        running_instance = self.create_resource(
+            resource_id='i-123',
+            status='running',
+            name='TestInstance',
+            resource_type='ec2',
+            extra_fields={
+                'InstanceId': 'i-123',
+                'LaunchTime': '2022-01-01T00:00:00Z',
+                'State': {'Name': 'running'},
+                'InstanceType': 't2.micro',
+                'Tags': [{'Key': 'Name', 'Value': 'TestInstance'}]
+            }
+        )
+        terminated_instance = self.create_resource(
+            resource_id='i-456',
+            status='terminated',
+            name='TerminatedInstance',
+            resource_type='ec2',
+            extra_fields={
+                'InstanceId': 'i-456',
+                'LaunchTime': '2022-01-01T00:00:00Z',
+                'State': {'Name': 'terminated'},
+                'InstanceType': 't2.micro',
+                'Tags': [{'Key': 'Name', 'Value': 'TerminatedInstance'}]
+            }
+        )
 
-        mock_ec2_client.describe_instances.return_value = {
-            'Reservations': [
-                {'Instances': [
-                    {
-                        'InstanceId': 'i-123',
-                        'LaunchTime': '2022-01-01T00:00:00Z',
-                        'State': {'Name': 'running'},
-                        'InstanceType': 't2.micro',
-                        'Tags': [{'Key': 'Name', 'Value': 'TestInstance'}]
-                    },
-                    {
-                        'InstanceId': 'i-456',
-                        'LaunchTime': '2022-01-01T00:00:00Z',
-                        'State': {'Name': 'terminated'},
-                        'InstanceType': 't2.micro',
-                        'Tags': [{'Key': 'Name', 'Value': 'TerminatedInstance'}]
-                    }
-                ]}
-            ]
+        # Boto3 client mock already exists in self.boto3_client (patch created in BaseTestCase)
+        self.boto3_client.describe_instances.return_value = {
+            'Reservations': [{'Instances': [running_instance, terminated_instance]}]
         }
 
         result = ec2_wizard.list_ec2_instances()
@@ -41,50 +49,51 @@ class TestEC2Wizard(unittest.TestCase):
         self.assertEqual(result['i-123']['Status'], 'running')
         self.assertEqual(result['i-123']['Description'], 'TestInstance')
 
-    @patch('wizards.ec2_wizard.boto3.client')
-    @patch('wizards.ec2_wizard.input')
-    @patch('wizards.ec2_wizard.log_action')
-    @patch('wizards.ec2_wizard.config')
-    def test_terminate_real(self, mock_config, mock_log_action, mock_input, mock_boto_client):
-        mock_config.delete_for_real = True
-        ec2_wizard.list_ec2_instances = MagicMock(return_value={
-            'i-abc123': {'Status': 'running', 'Description': 'Test instance'}
-        })
+    def test_terminate_real(self):
+        from unittest.mock import patch
 
-        mock_input.side_effect = ['1', 'yes']
-        mock_ec2_client = MagicMock()
-        mock_boto_client.return_value = mock_ec2_client
+        with patch('wizards.ec2_wizard.input') as mock_input, \
+             patch('wizards.ec2_wizard.log_action') as mock_log_action, \
+             patch('wizards.ec2_wizard.config') as mock_config:
 
-        ec2_wizard.terminate_selected_instances()
+            mock_config.delete_for_real = True
+            ec2_wizard.list_ec2_instances = MagicMock(return_value={
+                'i-abc123': {'Status': 'running', 'Description': 'Test instance'}
+            })
 
-        mock_boto_client.assert_called_once_with('ec2')
-        mock_ec2_client.terminate_instances.assert_called_once_with(InstanceIds=['i-abc123'])
-        mock_log_action.assert_called_once_with("EC2", 'i-abc123', True, mode="deletion")
+            mock_input.side_effect = ['1', 'yes']
 
-        self.assertTrue(mock_ec2_client.terminate_instances.called)
-        self.assertEqual(mock_ec2_client.terminate_instances.call_count, 1)
+            ec2_wizard.terminate_selected_instances()
 
-    @patch('wizards.ec2_wizard.boto3.client')
-    @patch('wizards.ec2_wizard.input')
-    @patch('wizards.ec2_wizard.log_action')
-    @patch('wizards.ec2_wizard.config')
-    def test_terminate_simulated(self, mock_config, mock_log_action, mock_input, mock_boto_client):
-        mock_config.delete_for_real = False
-        ec2_wizard.list_ec2_instances = MagicMock(return_value={
-            'i-abc123': {'Status': 'running', 'Description': 'Simulated'}
-        })
+            self.mock_boto_client.assert_called_once_with('ec2')
+            self.boto3_client.terminate_instances.assert_called_once_with(InstanceIds=['i-abc123'])
+            mock_log_action.assert_called_once_with("EC2", 'i-abc123', True, mode="deletion")
 
-        mock_input.side_effect = ['1', 'yes']
-        mock_ec2_client = MagicMock()
-        mock_boto_client.return_value = mock_ec2_client
+            self.assertTrue(self.boto3_client.terminate_instances.called)
+            self.assertEqual(self.boto3_client.terminate_instances.call_count, 1)
 
-        ec2_wizard.terminate_selected_instances()
+    def test_terminate_simulated(self):
+        from unittest.mock import patch
 
-        mock_ec2_client.terminate_instances.assert_not_called()
-        mock_log_action.assert_called_once_with("EC2", 'i-abc123', True, mode="deletion")
+        with patch('wizards.ec2_wizard.input') as mock_input, \
+             patch('wizards.ec2_wizard.log_action') as mock_log_action, \
+             patch('wizards.ec2_wizard.config') as mock_config:
 
-        self.assertFalse(mock_ec2_client.terminate_instances.called)
-        self.assertEqual(mock_log_action.call_count, 1)
+            mock_config.delete_for_real = False
+            ec2_wizard.list_ec2_instances = MagicMock(return_value={
+                'i-abc123': {'Status': 'running', 'Description': 'Simulated'}
+            })
+
+            mock_input.side_effect = ['1', 'yes']
+
+            ec2_wizard.terminate_selected_instances()
+
+            self.boto3_client.terminate_instances.assert_not_called()
+            mock_log_action.assert_called_once_with("EC2", 'i-abc123', True, mode="deletion")
+
+            self.assertFalse(self.boto3_client.terminate_instances.called)
+            self.assertEqual(mock_log_action.call_count, 1)
 
 if __name__ == '__main__':
+    import unittest
     unittest.main()
