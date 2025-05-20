@@ -39,8 +39,9 @@ def create_mock_resource(
     return resource
 
 class BaseTestCase(unittest.TestCase):
+    patch_path='boto3.client'
     def setUp(self):
-        patcher= patch('wizards.ec2_wizard.boto3.client')
+        patcher= patch(self.patch_path)
         self.mock_boto_client = patcher.start()
 
         self.boto3_client = create_mock_client()
