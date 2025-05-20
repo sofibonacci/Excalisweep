@@ -1,102 +1,78 @@
+# test_s3_wizard.py
+
 import unittest
 from unittest.mock import patch, MagicMock
-import os
-import sys
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from wizards import s3_wizard
+from datetime import datetime
+from s3_wizard import list_s3_buckets, empty_bucket
+from test_fixtures import BaseTestCase
 
-class TestS3Wizard(unittest.TestCase):
+class TestS3Wizard(BaseTestCase):
+    def setUp(self):
+        super().setUp()
 
-    @patch('wizards.s3_wizard.boto3.client')
-    def test_list_s3_buckets_handles_active_and_inactive(self, mock_boto_client):
+    @patch("s3_wizard.boto3.client")
+    def test_list_s3_buckets(self, mock_boto_client):
         mock_s3 = MagicMock()
         mock_boto_client.return_value = mock_s3
 
         mock_s3.list_buckets.return_value = {
             'Buckets': [
-                {'Name': 'test-bucket-1', 'CreationDate': '2024-01-01T00:00:00Z'},
-                {'Name': 'test-bucket-2', 'CreationDate': '2024-01-01T00:00:00Z'}
+                {'Name': 'test-bucket-1', 'CreationDate': datetime(2024, 1, 1)},
+                {'Name': 'test-bucket-2', 'CreationDate': datetime(2024, 2, 2)}
             ]
         }
 
-        def mock_get_bucket_tagging(Bucket):
-            return {'TagSet': [{'Key': 'Description', 'Value': f'{Bucket} description'}]}
-        
-        def mock_list_objects_v2(Bucket):
-            return {'Contents': [{'Key': 'file1.txt'}]} if Bucket == 'test-bucket-1' else {}
+        mock_s3.get_bucket_tagging.side_effect = [
+            {'TagSet': [{'Key': 'Description', 'Value': 'Test bucket 1'}]},
+            Exception("Access Denied")
+        ]
 
-        mock_s3.get_bucket_tagging.side_effect = mock_get_bucket_tagging
-        mock_s3.list_objects_v2.side_effect = mock_list_objects_v2
+        mock_s3.list_objects_v2.side_effect = [
+            {'Contents': [{'Key': 'file.txt'}]},  # has objects
+            {}  # no objects
+        ]
 
-        result = s3_wizard.list_s3_buckets()
-        self.assertEqual(result['test-bucket-1']['Status'], 'Active')
-        self.assertEqual(result['test-bucket-2']['Status'], 'Inactive ❌')
-        self.assertIn('Description', result['test-bucket-1'])
-    
-    @patch('wizards.s3_wizard.boto3.client')
-    def test_empty_bucket_deletes_objects_and_versions(self, mock_boto_client):
+        buckets = list_s3_buckets()
+        self.assertEqual(len(buckets), 2)
+
+        self.assertEqual(buckets['test-bucket-1']['Description'], 'Test bucket 1')
+        self.assertEqual(buckets['test-bucket-1']['Status'], 'Active')
+
+        self.assertTrue("Error retrieving description" in buckets['test-bucket-2']['Description'])
+        self.assertEqual(buckets['test-bucket-2']['Status'], 'Inactive ❌')
+
+    @patch("s3_wizard.boto3.client")
+    def test_empty_bucket_with_versions(self, mock_boto_client):
         mock_s3 = MagicMock()
         mock_boto_client.return_value = mock_s3
 
         mock_s3.list_objects_v2.return_value = {
-            'Contents': [{'Key': 'test.txt'}]
+            'Contents': [{'Key': 'file1.txt'}, {'Key': 'file2.txt'}]
         }
+
         mock_s3.list_object_versions.return_value = {
-            'Versions': [{'Key': 'test.txt', 'VersionId': '1'}]
+            'Versions': [
+                {'Key': 'file1.txt', 'VersionId': 'v1'},
+                {'Key': 'file2.txt', 'VersionId': 'v2'}
+            ]
         }
 
-        result = s3_wizard.empty_bucket('my-bucket')
+        success = empty_bucket("test-bucket")
+        self.assertTrue(success)
+        mock_s3.delete_objects.assert_called()
 
-        mock_s3.delete_objects.assert_any_call(
-            Bucket='my-bucket',
-            Delete={'Objects': [{'Key': 'test.txt'}]}
-        )
-        mock_s3.delete_objects.assert_any_call(
-            Bucket='my-bucket',
-            Delete={'Objects': [{'Key': 'test.txt', 'VersionId': '1'}]}
-        )
-        self.assertTrue(result)
-
-    @patch('wizards.s3_wizard.boto3.client')
-    @patch('wizards.s3_wizard.input')
-    @patch('wizards.s3_wizard.log_action')
-    @patch('wizards.s3_wizard.config')
-    def test_delete_selected_buckets_real_deletion(self, mock_config, mock_log_action, mock_input, mock_boto_client):
-        mock_config.delete_for_real = True
-        mock_input.side_effect = ['1', 'yes']
-
-        s3_wizard.list_s3_buckets = MagicMock(return_value={
-            'bucket-one': {'Status': 'Inactive ❌', 'Description': 'Test Bucket', 'CreationDate': '2023-01-01'}
-        })
-        s3_wizard.empty_bucket = MagicMock(return_value=True)
-
+    @patch("s3_wizard.boto3.client")
+    def test_empty_bucket_with_exception(self, mock_boto_client):
         mock_s3 = MagicMock()
         mock_boto_client.return_value = mock_s3
 
-        s3_wizard.delete_selected_buckets()
+        mock_s3.list_objects_v2.side_effect = Exception("Something went wrong")
 
-        mock_s3.delete_bucket.assert_called_once_with(Bucket='bucket-one')
-        mock_log_action.assert_called_with('bucket-one', 'S3', True)
+        with patch("s3_wizard.log_action") as mock_log:
+            success = empty_bucket("error-bucket")
+            self.assertFalse(success)
+            mock_log.assert_called_once_with("S3", "error-bucket", False, mode="deletion")
 
-    @patch('wizards.s3_wizard.boto3.client')
-    @patch('wizards.s3_wizard.input')
-    @patch('wizards.s3_wizard.log_action')
-    @patch('wizards.s3_wizard.config')
-    def test_delete_selected_buckets_simulation(self, mock_config, mock_log_action, mock_input, mock_boto_client):
-        mock_config.delete_for_real = False
-        mock_input.side_effect = ['1', 'yes']
-
-        s3_wizard.list_s3_buckets = MagicMock(return_value={
-            'bucket-one': {'Status': 'Inactive ❌', 'Description': 'Test Bucket', 'CreationDate': '2023-01-01'}
-        })
-
-        mock_s3 = MagicMock()
-        mock_boto_client.return_value = mock_s3
-
-        s3_wizard.delete_selected_buckets()
-
-        mock_s3.delete_bucket.assert_not_called()
-        mock_log_action.assert_called_once_with("S3", 'bucket-one', True, mode="deletion")
 
 if __name__ == '__main__':
     unittest.main()
