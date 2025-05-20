@@ -1,4 +1,4 @@
-# 🗡️ Welcome to Excalisweep 🧹
+# 🗡️ Welcome to Excalisweep v.1.0 🧹
 
 ## What is ExcaliSweep?
 
@@ -37,7 +37,10 @@ Every AWS Service (S3, EC2, etc) has its own deletion process (e.g., different b
 
 ## How to use:
 
-Clone the repo and run the wizard in CloudShell within the AWS Sandbox you desire to manage.
+Clone the repo and run the wizard in CloudShell within the AWS Sandbox you desire to manage with
+```bash
+bash excalisweep.sh
+```
 
 ## Logs:
 
