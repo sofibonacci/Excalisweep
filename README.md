@@ -49,3 +49,12 @@ When an action is performed it's logged to excalisweep.logs, a file unique to ea
 ```bash
 2025-02-18 14:00:03 (UTC +0) | S3 Bucket | {bucket_name} | SUCCESSFULLY DELETED/DELETION FAILED/TESTING
 ```
+
+## Credits
+
+This tool was developed by:
+
+- Sofía Gurruchaga  
+- Lourdes Micaela Suarez  
+- Martina Toffoletto
+
