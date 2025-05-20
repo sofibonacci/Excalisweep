@@ -114,3 +114,41 @@ def select_from_list(item_list, prompt_message, allow_all=True):
     except ValueError:
         print("\n❌ Invalid input. Please enter valid numbers separated by commas.")
         return []
+
+
+# -----------------------------------------
+# Function: run_interactive_menu            
+# -----------------------------------------
+# Description: --> use it in all wizards inside main menu
+#   Displays an interactive menu with options and executes the corresponding actions.
+# Parameters:
+#   - title: title of the menu
+#   - options: list of tuples (label, action, exit_flag)
+#       * label: displayed name of the option
+#       * action: function to execute when selected
+#       * exit_flag: boolean indicating if this option exits the menu
+# Usage:
+#   run_interactive_menu("Main Menu", [
+#       ("Option 1", action1, False),
+#       ("Option 2", action2, False),
+#       ("Exit", exit_action, True)
+#   ])                  
+# ----------------------------------------- 
+
+def run_interactive_menu(title, options):
+    print(f"""*****************************************\n{title}\n*****************************************""")
+
+    while True:
+        print("\nMain Menu:")
+        for idx, (label, _, _) in enumerate(options, 1):
+            print(f"{idx}. {label}")
+        choice = input("Enter your choice: ").strip()
+
+        if choice.isdigit() and 1 <= int(choice) <= len(options):
+            _, action, exit_flag = options[int(choice) - 1]
+            if exit_flag:
+                print("\n🔚 Exiting. Have a great day!")
+                break
+            action()
+        else:
+            print(f"\nInvalid choice. Please enter a number between 1 and {len(options)}.")
