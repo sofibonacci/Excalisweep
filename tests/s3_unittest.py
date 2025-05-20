@@ -30,9 +30,8 @@ class TestS3Wizard(unittest.TestCase):
         # Mock list_objects_v2 for status detection
         def mock_list_objects_v2(Bucket):
             if Bucket == 'active-bucket':
-                return {'Contents': [{'Key': 'somefile.txt'}]}  # <-- simulate a non-empty bucket
-            return {}  # simulate empty bucket for others
-
+                return {'Contents': [{'Key': 'somefile.txt'}]}  # simulate a non-empty bucket
+            return {}  # simulate empty bucket
 
         mock_s3_client.get_bucket_tagging.side_effect = mock_get_bucket_tagging
         mock_s3_client.list_objects_v2.side_effect = mock_list_objects_v2
@@ -42,12 +41,11 @@ class TestS3Wizard(unittest.TestCase):
         self.assertIsInstance(result, dict)
         self.assertEqual(result['active-bucket']['Status'], 'Active')
         self.assertEqual(result['empty-bucket']['Status'], 'Inactive ❌')
-       
+
     @patch('wizards.s3_wizard.boto3.client')
     @patch('wizards.s3_wizard.input')
     @patch('wizards.s3_wizard.log_action')
     @patch('wizards.s3_wizard.config')
-    
     def test_delete_real(self, mock_config, mock_log_action, mock_input, mock_boto_client):
         mock_config.delete_for_real = True
         s3_wizard.list_s3_buckets = MagicMock(return_value={
@@ -63,13 +61,27 @@ class TestS3Wizard(unittest.TestCase):
 
         s3_wizard.delete_selected_buckets()
 
-        mock_boto_client.assert_any_call('s3') 
-
+        mock_boto_client.assert_any_call('s3')
 
     @patch('wizards.s3_wizard.boto3.client')
     @patch('wizards.s3_wizard.input')
     @patch('wizards.s3_wizard.log_action')
     @patch('wizards.s3_wizard.config')
+    def test_delete_skips_active_buckets(self, mock_config, mock_log_action, mock_input, mock_boto_client):
+        mock_config.delete_for_real = True
+        s3_wizard.list_s3_buckets = MagicMock(return_value={
+            'active-bucket': {'Status': 'Active', 'Description': 'Desc', 'CreationDate': datetime(2022, 1, 1)}
+        })
+
+        mock_input.side_effect = ['1']
+        mock_s3_client = MagicMock()
+        mock_boto_client.return_value = mock_s3_client
+
+        s3_wizard.delete_selected_buckets()
+
+        # The delete_bucket method should not be called because it's an active bucket
+        mock_s3_client.delete_bucket.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()
