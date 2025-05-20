@@ -9,7 +9,7 @@ import time
 def show_intro():
     print("""
     ****************************************
-    *        Welcome to ExcaliSweep!        *
+    *     Welcome to ExcaliSweep v.1.0!        *
     *   Your AWS Cleanup Wizard Assistant  *
     ****************************************
     """)
