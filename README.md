@@ -1,4 +1,4 @@
-# 🗡️ Welcome to Excalisweep 🧹
+# 🗡️ Welcome to Excalisweep v.1.0 🧹
 
 ## What is ExcaliSweep?
 
@@ -16,7 +16,7 @@ Excalisweep also includes:
 
 ## Details
 
-Every AWS Service (S3, EC2, etc) has its own deletion process (e.g., different boto3 functions to see which ones are active and delete them), so generalizing is difficult and we've created one separated script for each one of them. For now, we're focusing on the ones that we see on the Sandboxes we have access to, which are used for DeepRacer training:
+Every AWS Service (S3, EC2, etc) has its own deletion process (e.g., different boto3 functions to see which ones are active and delete them), so generalizing is difficult and we've created one separated script for each one of them. For now, we're focusing on the ones that we see on the Sandboxes we have access to:
 
 - S3
 - EC2
@@ -37,7 +37,10 @@ Every AWS Service (S3, EC2, etc) has its own deletion process (e.g., different b
 
 ## How to use:
 
-Clone the repo and run the wizard in CloudShell within the AWS Sandbox you desire to manage.
+Clone the repo and run the wizard in CloudShell within the AWS Sandbox you desire to manage with
+```bash
+bash excalisweep.sh
+```
 
 ## Logs:
 
@@ -46,3 +49,12 @@ When an action is performed it's logged to excalisweep.logs, a file unique to ea
 ```bash
 2025-02-18 14:00:03 (UTC +0) | S3 Bucket | {bucket_name} | SUCCESSFULLY DELETED/DELETION FAILED/TESTING
 ```
+
+## Credits
+
+This tool was developed by:
+
+- Sofía Gurruchaga  
+- Lourdes Micaela Suarez  
+- Martina Toffoletto
+
