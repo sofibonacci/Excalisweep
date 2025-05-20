@@ -40,15 +40,19 @@ def terminate_selected_instances():
         print("\n⚠️ No EC2 instances found.")
         return
 
-    print("\n All EC2 Instances:")
+    print("\n🖥️ All EC2 Instances:")
     instance_list = list(instances.keys())
     for idx, instance in enumerate(instance_list, start=1):
         status = instances[instance]['Status']
         description = instances[instance]['Description']
         print(f"{idx}. {instance} ({status}) - {description}")
 
-    print("\nEnter the numbers of the instances you want to terminate (comma-separated), or type 'all' to terminate all:")
+    print("\nEnter the numbers of the instances you want to terminate (comma-separated), type 'all' to terminate all, or 'exit' to cancel:")
     choice = input("Your choice: ").strip().lower()
+
+    if choice == "exit":
+        print("❌ Termination canceled by user.")
+        return
 
     if choice == "all":
         selected_instances = instance_list
@@ -64,22 +68,26 @@ def terminate_selected_instances():
         print("\nNo valid instances selected for termination.")
         return
 
-    confirm = input(f"\nAre you sure you want to terminate these {len(selected_instances)} instance(s)? (yes/no): ").strip().lower()
-    if confirm == "yes":
-        for instance in selected_instances:
-            if config.delete_for_real:
-                try:
-                    ec2_client.terminate_instances(InstanceIds=[instance])
-                    print(f"Successfully terminated: {instance}")
-                    log_action("EC2", instance, True, mode="deletion")
-                except Exception as e:
-                    print(f"Failed to terminate {instance}: {str(e)}")
-                    log_action("EC2", instance, False, mode="deletion")
-            else:
-                log_action("EC2", instance, True, mode="deletion")
-                print(f"Logged terminate attempt for: {instance}")
-    else:
+    confirm = input(f"\nAre you sure you want to terminate these {len(selected_instances)} instance(s)? (yes/no/exit): ").strip().lower()
+    if confirm == "exit":
+        print("❌ Termination canceled by user.")
+        return
+    elif confirm != "yes":
         print("Termination canceled.")
+        return
+
+    for instance in selected_instances:
+        if config.delete_for_real:
+            try:
+                ec2_client.terminate_instances(InstanceIds=[instance])
+                print(f"✅ Successfully terminated: {instance}")
+                log_action("EC2", instance, True, mode="deletion")
+            except Exception as e:
+                print(f"❌ Failed to terminate {instance}: {str(e)}")
+                log_action("EC2", instance, False, mode="deletion")
+        else:
+            log_action("EC2", instance, True, mode="deletion")
+            print(f"📝 Logged terminate attempt for: {instance}")
 
 def interactive_menu():
     print("""
