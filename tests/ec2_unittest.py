@@ -1,5 +1,5 @@
 from test_fixtures import BaseTestCase
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -50,7 +50,6 @@ class TestEC2Wizard(BaseTestCase):
         self.assertEqual(result['i-123']['Description'], 'TestInstance')
 
     def test_terminate_real(self):
-        from unittest.mock import patch
 
         with patch('wizards.ec2_wizard.input') as mock_input, \
              patch('wizards.ec2_wizard.log_action') as mock_log_action, \
