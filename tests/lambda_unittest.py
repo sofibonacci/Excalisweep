@@ -95,7 +95,7 @@ class TestLambdaWizard(BaseTestCase):
                 ]
             }
             self.boto3_client.list_aliases.return_value = {'Aliases': []}
-            self.boto3_client.list_versions_by_function.return_value = {'Versions': []}
+            self.boto3_client.list_versions_by_function.return_value = {'Versions':[{'Version': '1'}, {'Version': '$LATEST'}]}
             self.boto3_client.delete_function.return_value = None
 
             lambda_wizard.delete_selected_lambda_functions()
