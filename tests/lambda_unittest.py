@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from wizards import lambda_wizard
 
 class TestLambdaWizard(BaseTestCase):
-    patch_path = 'wizards.lambda_wizard.boto3.client'  # patch boto3.client heredado
+    patch_path = 'wizards.lambda_wizard.boto3.client'  # inherited patch boto3.client 
 
     def test_list_lambda_functions_success(self):
         self.boto3_client.list_functions.return_value = {
