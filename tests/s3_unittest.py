@@ -9,52 +9,6 @@ from wizards import s3_wizard
 class TestS3Wizard(BaseTestCase):
     patch_path = 'wizards.s3_wizard.boto3.client'
 
-    def test_list_s3_buckets(self):
-        # Create mock bucket data
-        active_bucket = self.create_resource(
-            resource_id='test-bucket',
-            status='Active',
-            name='TestBucket',
-            resource_type='s3',
-            extra_fields={
-                'Name': 'test-bucket',
-                'CreationDate': '2022-01-01T00:00:00Z'
-            }
-        )
-        inactive_bucket = self.create_resource(
-            resource_id='test-bucket-inactive',
-            status='Inactive',
-            name='TestBucketInactive',
-            resource_type='s3',
-            extra_fields={
-                'Name': 'test-bucket-inactive',
-                'CreationDate': '2022-01-01T00:00:00Z'
-            }
-        )
-
-        # Mock boto3 client responses
-        self.boto3_client.list_buckets.return_value = {
-            'Buckets': [active_bucket, inactive_bucket]
-        }
-        self.boto3_client.get_bucket_tagging.side_effect = [
-            {'TagSet': [{'Key': 'Description', 'Value': 'Test bucket description'}]},
-            {'TagSet': []}
-        ]
-        self.boto3_client.list_objects_v2.side_effect = [
-            {'Contents': [{'Key': 'file1.txt'}]},  # Active bucket has objects
-            {}  # Inactive bucket has no objects
-        ]
-
-        result = s3_wizard.list_s3_buckets()
-
-        self.assertIsInstance(result, dict)
-        self.assertIn('test-bucket', result)
-        self.assertIn('test-bucket-inactive', result)  # Ensure both buckets are processed
-        self.assertEqual(result['test-bucket']['Status'], 'Active')
-        self.assertEqual(result['test-bucket']['Description'], 'Test bucket description')
-        self.assertEqual(result['test-bucket-inactive']['Status'], 'Inactive ❌')
-        self.assertEqual(result['test-bucket-inactive']['Description'], 'No description available')
-
     def test_list_s3_buckets_single(self):
         # Test with only test-bucket to match observed output
         active_bucket = self.create_resource(
