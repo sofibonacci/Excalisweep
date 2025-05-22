@@ -12,12 +12,12 @@ class TestS3Wizard(BaseTestCase):
     def test_list_s3_buckets(self):
         # Create mock bucket data
         active_bucket = self.create_resource(
-            resource_id='test-bucket-active',
+            resource_id='test-bucket',
             status='Active',
-            name='TestBucketActive',
+            name='TestBucket',
             resource_type='s3',
             extra_fields={
-                'Name': 'test-bucket-active',
+                'Name': 'test-bucket',
                 'CreationDate': '2022-01-01T00:00:00Z'
             }
         )
@@ -37,7 +37,7 @@ class TestS3Wizard(BaseTestCase):
             'Buckets': [active_bucket, inactive_bucket]
         }
         self.boto3_client.get_bucket_tagging.side_effect = [
-            {'TagSet': [{'Key': 'Description', 'Value': 'Active bucket description'}]},
+            {'TagSet': [{'Key': 'Description', 'Value': 'Test bucket description'}]},
             {'TagSet': []}
         ]
         self.boto3_client.list_objects_v2.side_effect = [
@@ -48,10 +48,10 @@ class TestS3Wizard(BaseTestCase):
         result = s3_wizard.list_s3_buckets()
 
         self.assertIsInstance(result, dict)
-        self.assertIn('test-bucket-active', result)
+        self.assertIn('test-bucket', result)
         self.assertIn('test-bucket-inactive', result)
-        self.assertEqual(result['test-bucket-active']['Status'], 'Active')
-        self.assertEqual(result['test-bucket-active']['Description'], 'Active bucket description')
+        self.assertEqual(result['test-bucket']['Status'], 'Active')
+        self.assertEqual(result['test-bucket']['Description'], 'Test bucket description')
         self.assertEqual(result['test-bucket-inactive']['Status'], 'Inactive ❌')
         self.assertEqual(result['test-bucket-inactive']['Description'], 'No description available')
 
