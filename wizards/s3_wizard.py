@@ -144,7 +144,6 @@ def interactive_menu():
         print("1. List S3 Buckets and Status")
         print("2. Delete Buckets")
         print("3. Exit")
-        print("current value of delete_for_real is: ", {delete_for_real})
 
         choice = input("Enter your choice: ").strip()
 
