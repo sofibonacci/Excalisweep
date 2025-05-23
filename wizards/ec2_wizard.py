@@ -104,6 +104,7 @@ def interactive_menu():
         print("1. List EC2 Instances and Status")
         print("2. Terminate Instances")
         print("3. Exit")
+        print("current value of delete_for_real is: ", {delete_for_real})
         choice = input("Enter your choice: ").strip()
 
         if choice == "1":
