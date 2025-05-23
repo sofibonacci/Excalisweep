@@ -121,7 +121,7 @@ def interactive_menu():
 """)
 
     while True:
-        print("\nMain Menu:", "{delete_for_real}")
+        print("\nMain Menu:")
         print("1. List Lambda Functions")
         print("2. Delete Lambda Functions")
         print("3. Exit")
