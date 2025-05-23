@@ -149,7 +149,6 @@ def execute_method(service_name, method_name): #execute the method u choose (and
 
 
 if __name__ == "__main__":
-    print("current value of delete_for_real is: ", {delete_for_real})
     run_interactive_menu(
     "* Welcome to AWS Service Explorer!      *\n* Your AWS Service and Method Assistant *",
     [
