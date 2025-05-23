@@ -8,6 +8,7 @@ import config
 import os
 # Get delete_for_real from environment variable
 delete_for_real = os.getenv('DELETE_FOR_REAL', 'False') == 'True'
+
 def list_ec2_instances():
     ec2_client = boto3.client('ec2')
     response = ec2_client.describe_instances()
@@ -104,7 +105,6 @@ def interactive_menu():
         print("1. List EC2 Instances and Status")
         print("2. Terminate Instances")
         print("3. Exit")
-        print("current value of delete_for_real is: ", {delete_for_real})
         choice = input("Enter your choice: ").strip()
 
         if choice == "1":
