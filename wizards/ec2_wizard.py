@@ -5,6 +5,9 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from logger import log_action
 import config 
+import os
+# Get delete_for_real from environment variable
+delete_for_real = os.getenv('DELETE_FOR_REAL', 'False') == 'True'
 
 def list_ec2_instances():
     ec2_client = boto3.client('ec2')

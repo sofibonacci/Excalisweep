@@ -8,8 +8,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from logger import log_action
 import config
-
-
+# Get delete_for_real from environment variable
+delete_for_real = os.getenv('DELETE_FOR_REAL', 'False') == 'True'
 
 def list_services():  #list all available AWS services
     try:
@@ -149,7 +149,6 @@ def execute_method(service_name, method_name): #execute the method u choose (and
 
 
 if __name__ == "__main__":
-    
     run_interactive_menu(
     "* Welcome to AWS Service Explorer!      *\n* Your AWS Service and Method Assistant *",
     [

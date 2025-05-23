@@ -4,6 +4,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from logger import log_action 
 import config 
+# Get delete_for_real from environment variable
+delete_for_real = os.getenv('DELETE_FOR_REAL', 'False') == 'True'
 
 def list_s3_buckets():
     s3_client = boto3.client('s3')
@@ -142,6 +144,7 @@ def interactive_menu():
         print("1. List S3 Buckets and Status")
         print("2. Delete Buckets")
         print("3. Exit")
+
         choice = input("Enter your choice: ").strip()
 
         if choice == "1":
