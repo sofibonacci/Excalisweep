@@ -131,8 +131,6 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
 
 
 if __name__ == "__main__":
-    print("current value of delete_for_real is: ", {delete_for_real})
-
     run_interactive_menu(
     "*   Welcome to ExcaliSweep Cloud Formation Wizard!  *\n*   Your Cloud Formation Stacks Cleanup Assistant   *",
     [
