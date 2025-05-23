@@ -7,7 +7,7 @@ import requests
 import time
 
 # Initialize delete_for_real in the global scope
-delete_for_real = False  # Default to testing mode
+delete_for_real = True  # Default to testing mode
 
 def show_intro():
     print("""
