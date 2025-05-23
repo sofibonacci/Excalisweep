@@ -5,7 +5,9 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from logger import log_action
 import config 
-
+import os
+# Get delete_for_real from environment variable
+delete_for_real = os.getenv('DELETE_FOR_REAL', 'False') == 'True'
 def list_ec2_instances():
     ec2_client = boto3.client('ec2')
     response = ec2_client.describe_instances()
@@ -98,7 +100,7 @@ def interactive_menu():
 """)
 
     while True:
-        print("\nMain Menu:")
+        print("\nMain Menu:", "value of delete for real isss: ", {delete_for_real)
         print("1. List EC2 Instances and Status")
         print("2. Terminate Instances")
         print("3. Exit")
