@@ -22,7 +22,6 @@ def show_intro():
     az = get_availability_zone()
     print(f"📍 Region: {region}")
     print(f"🏠 Availability Zone: {az}\n")
-    set_status()
 
 def get_region():
     """Get current AWS region from boto3 session, or fallback to instance metadata."""
@@ -141,7 +140,9 @@ def main_menu():
         '9': lambda: print("Exiting ExcaliSweep. Goodbye!")
     }
     
-    while True:
+    while True:        
+        print("Currently, deletion mode is set to ", {delete_for_real})
+        print("If you'd like to change it, go to option Change Mode")
         print("\nOptions:")
         print("  1. Show billed AWS services")
         print("  2. Run S3 Cleanup Wizard")
