@@ -141,7 +141,7 @@ def main_menu():
     }
     
     while True:        
-        print("Currently, deletion mode is set to ", {delete_for_real})
+        print("Currently, deletion mode is set to", delete_for_real)
         print("If you'd like to change it, go to option Change Mode")
         print("\nOptions:")
         print("  1. Show billed AWS services")
