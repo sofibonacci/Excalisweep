@@ -54,7 +54,7 @@ When an action is performed it's logged to excalisweep.logs, a file unique to ea
 
 This tool was developed by:
 
-- Sofía Gurruchaga  
-- Lourdes Micaela Suarez  
-- Martina Toffoletto
+- Sofía Gurruchaga - Team Lead and Developer 
+- Lourdes Micaela Suarez - Developer  
+- Martina Toffoletto - Developer
 
