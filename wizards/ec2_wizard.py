@@ -100,7 +100,7 @@ def interactive_menu():
 """)
 
     while True:
-        print("\nMain Menu:", "value of delete for real isss: ", {delete_for_real)
+        print("\nMain Menu:")
         print("1. List EC2 Instances and Status")
         print("2. Terminate Instances")
         print("3. Exit")
