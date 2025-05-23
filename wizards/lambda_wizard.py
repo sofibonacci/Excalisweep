@@ -5,7 +5,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from logger import log_action
 import config 
-
+# Get delete_for_real from environment variable
+delete_for_real = os.getenv('DELETE_FOR_REAL', 'False') == 'True'
 def list_lambda_functions():
     lambda_client = boto3.client('lambda')
     response = lambda_client.list_functions()
@@ -120,7 +121,7 @@ def interactive_menu():
 """)
 
     while True:
-        print("\nMain Menu:")
+        print("\nMain Menu:", "{delete_for_real}")
         print("1. List Lambda Functions")
         print("2. Delete Lambda Functions")
         print("3. Exit")
