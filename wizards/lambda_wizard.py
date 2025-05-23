@@ -125,6 +125,8 @@ def interactive_menu():
         print("1. List Lambda Functions")
         print("2. Delete Lambda Functions")
         print("3. Exit")
+        print("current value of delete_for_real is: ", {delete_for_real})
+
         choice = input("Enter your choice: ").strip()
 
         if choice == "1":
