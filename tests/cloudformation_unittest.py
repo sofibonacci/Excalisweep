@@ -44,10 +44,11 @@ class TestCloudFormationWizard(BaseTestCase):
         stacks = explorer.list_cloudformation_stacks()
         self.assertEqual(stacks, {})
 
+"""
     @patch('wizards.cloud_formation_wizard.list_cloudformation_stacks')
     @patch('wizards.cloud_formation_wizard.select_from_list')
 
-"""
+    
     def test_delete_selected_stacks_no_stacks(self, mock_select, mock_list):
         mock_list.return_value = {}
         result = explorer.delete_selected_stacks()
