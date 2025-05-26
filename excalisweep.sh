@@ -20,6 +20,7 @@ find "$test_dir" -type f -name "*unittest.py" | while read -r test_file; do
     else
         echo "================$test_file: FAILED================"
         ((fail_count++))   
+        echo "$output"
     fi
     echo ""    
     sleep 1
