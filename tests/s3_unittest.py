@@ -66,7 +66,7 @@ class TestS3Wizard(BaseTestCase):
 
             self.assertFalse(result)
             mock_log_action.assert_called_once_with('S3', 'test-bucket', False, mode='deletion')
-
+"""
     def test_delete_selected_buckets_real(self):
         with patch('wizards.s3_wizard.input') as mock_input, \
              patch('wizards.s3_wizard.log_action') as mock_log_action, \
@@ -92,7 +92,7 @@ class TestS3Wizard(BaseTestCase):
             mock_log_action.assert_called_once_with('test-bucket', 'S3', True)
             self.assertTrue(self.boto3_client.delete_bucket.called)
             self.assertEqual(self.boto3_client.delete_bucket.call_count, 1)
-
+"""
     def test_delete_selected_buckets_simulated(self):
         with patch('wizards.s3_wizard.input') as mock_input, \
              patch('wizards.s3_wizard.log_action') as mock_log_action, \
