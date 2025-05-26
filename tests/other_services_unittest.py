@@ -145,49 +145,5 @@ class TestAWSServiceExplorer(unittest.TestCase):
             explorer.execute_method('s3', 'some_method')
             mock_method.assert_called_once()
 
-"""
-    @patch('builtins.input', side_effect=['"my-bucket"'])
-    @patch('wizards.other_services_wizard.config')
-    @patch('wizards.other_services_wizard.log_action')
-    @patch('boto3.client')
-    def test_execute_delete_method_fake(self, mock_boto_client, mock_log_action, mock_config, mock_input):
-        mock_config.delete_for_real = False
-        
-        mock_method = MagicMock()
-        mock_method.__doc__ = ":param Bucket: **[REQUIRED]**"
-        
-        client_mock = MagicMock()
-        client_mock.delete_bucket = mock_method
-        mock_boto_client.return_value = client_mock
-
-        with patch('wizards.other_services_wizard.getattr', return_value=mock_method):
-            explorer.execute_method('s3', 'delete_bucket')
-            
-            mock_method.assert_not_called()
-            mock_log_action.assert_called_once()
-
-
-
-    @patch('builtins.input', side_effect=['"my-bucket"'])
-    @patch('wizards.other_services_wizard.config')
-    @patch('wizards.other_services_wizard.log_action')
-    @patch('boto3.client')
-    def test_execute_delete_method_real(self, mock_boto_client, mock_log_action, mock_config, mock_input):
-        mock_config.delete_for_real = True
-
-        mock_method = MagicMock(return_value={"ResponseMetadata": {"HTTPStatusCode": 200}})
-        mock_method.__doc__ = ":param Bucket: **[REQUIRED]**"
-
-        client_mock = MagicMock()
-        client_mock.delete_bucket = mock_method
-        mock_boto_client.return_value = client_mock
-
-        with patch('wizards.other_services_wizard.getattr', return_value=mock_method):
-            explorer.execute_method('s3', 'delete_bucket')
-
-            mock_method.assert_called_once_with(Bucket="my-bucket")
-            mock_log_action.assert_called_once()
-""" 
-
 if __name__ == '__main__':
     unittest.main()
