@@ -46,8 +46,9 @@ class TestCloudFormationWizard(BaseTestCase):
 
     @patch('wizards.cloud_formation_wizard.list_cloudformation_stacks')
     @patch('wizards.cloud_formation_wizard.select_from_list')
-    """
-    def test_delete_selected_stacks_no_stacks(self, mock_select, mock_list):
+    
+    
+    """def test_delete_selected_stacks_no_stacks(self, mock_select, mock_list):
         mock_list.return_value = {}
         result = explorer.delete_selected_stacks()
         mock_select.assert_not_called()
@@ -98,7 +99,7 @@ class TestCloudFormationWizard(BaseTestCase):
 
         self.boto3_client.delete_stack.assert_called_once_with(StackName='stack1')
         mock_waiter.wait.assert_called_once_with(StackName='stack1')
-        mock_log.assert_called_once_with("Cloud Formation", 'stack1', True, mode="deletion")
-        """
+        mock_log.assert_called_once_with("Cloud Formation", 'stack1', True, mode="deletion")"""
+        
 if __name__ == '__main__':
     unittest.main()
