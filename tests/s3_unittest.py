@@ -1,5 +1,5 @@
 # tests/s3_unittest.py
-from test_fixtures import BaseTestCase
+from tests.test_fixtures import BaseTestCase
 from unittest.mock import MagicMock, patch
 import os
 import sys

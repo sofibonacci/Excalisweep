@@ -2,7 +2,7 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from tests.text_fixtures import BaseTestCase
+from tests.test_fixtures import BaseTestCase
 import wizards.cloud_formation_wizard as explorer
 import config
 

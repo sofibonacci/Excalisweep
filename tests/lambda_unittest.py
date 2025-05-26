@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock, call
-from test_fixtures import BaseTestCase
+from tests.test_fixtures import BaseTestCase
 import os
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
