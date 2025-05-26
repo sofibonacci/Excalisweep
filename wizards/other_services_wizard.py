@@ -115,7 +115,7 @@ def execute_method(service_name, method_name): #execute the method u choose (and
         
         delete=any(word in method_name.lower() for word in ["delete", "terminate", "remove", "drop", "destroy", "purge"])
         if delete:
-            if config.delete_for_real:
+            if delete_for_real:
                 try:
                     response = method(**params_dict)
                     log_action( service_name.title(),', '.join(map(str, params_dict.values())),True,mode="deletion")
