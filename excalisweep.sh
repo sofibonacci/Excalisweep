@@ -12,10 +12,10 @@ fail_count=0
 find "$test_dir" -type f -name "*unittest.py" | while read -r test_file; do
     # Converts file in a module to use with python -m
     module_name=$(echo "$test_file" | sed 's|/|.|g' | sed 's/.py$//')
-
+    
     output=$(python -m unittest "$module_name" 2>&1)
     status=$?
-
+    echo "$output"
     if [ $status -eq 0 ]; then
         echo "================$test_file: OK================"
         ((ok_count++))
