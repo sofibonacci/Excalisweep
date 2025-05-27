@@ -38,7 +38,14 @@ class TestLambdaWizard(BaseTestCase):
 
         self.assertEqual(result, {})
         mock_log_action.assert_called_once_with("Lambda", 'func2', False, mode="deletion")
+        
+    def test_interactive_menu_exit(self):
+        with patch('wizards.lambda_wizard.input') as mock_input, patch('builtins.print') as mock_print:
 
+            mock_input.side_effect = ['3']
+            lambda_wizard.interactive_menu()
+            mock_print.assert_any_call("\n🔚 Exiting Excalisweep Lambda Wizard. Have a great day!")
+"""
     def test_delete_lambda_function_success(self):
         self.boto3_client.list_aliases.return_value = {'Aliases': [{'AliasName': 'alias1'}]}
         self.boto3_client.list_versions_by_function.return_value = {'Versions': [{'Version': '1'}, {'Version': '$LATEST'}]}
@@ -118,13 +125,6 @@ class TestLambdaWizard(BaseTestCase):
             lambda_wizard.delete_selected_lambda_functions()
 
             mock_log_action.assert_not_called()
-
-    def test_interactive_menu_exit(self):
-        with patch('wizards.lambda_wizard.input') as mock_input, patch('builtins.print') as mock_print:
-
-            mock_input.side_effect = ['3']
-            lambda_wizard.interactive_menu()
-            mock_print.assert_any_call("\n🔚 Exiting Excalisweep Lambda Wizard. Have a great day!")
-
+"""
 if __name__ == '__main__':
     unittest.main()

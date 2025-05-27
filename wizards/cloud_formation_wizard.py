@@ -101,7 +101,7 @@ def delete_selected_stacks(): #delete selected cloudformation stacks
         for stack in selected_stacks:
             
             try:
-                if config.delete_for_real:
+                if delete_for_real:
                     cloudformation_client.delete_stack(StackName=stack)
                     print(f"⏳ Deletion initiated for: {stack}, waiting for confirmation...")
                     waiter = cloudformation_client.get_waiter('stack_delete_complete')

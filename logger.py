@@ -1,6 +1,5 @@
 import os
 from datetime import datetime, timezone
-import config
 
 def log_action(service_name, resource_name, success, mode="deletion", function_name=None, json_input=None, response_json=None):
     log_file_path = "excalisweep.logs"
@@ -13,9 +12,12 @@ def log_action(service_name, resource_name, success, mode="deletion", function_n
     # Format timestamp
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S (UTC +0)")
     
+    # Get delete_for_real from environment variable
+    delete_for_real = os.getenv('DELETE_FOR_REAL', 'False') == 'True'
+    
     # Determine status
     if mode in ["deletion", "request"]:
-        if config.delete_for_real:
+        if delete_for_real:
             if mode == "deletion":
                 status = "SUCCESFULLY DELETED" if success else "DELETION FAILED"
             elif mode == "request":

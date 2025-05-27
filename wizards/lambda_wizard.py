@@ -101,7 +101,7 @@ def delete_selected_lambda_functions():
         return
 
     for function in selected_functions:
-        if config.delete_for_real:
+        if delete_for_real:
             if delete_lambda_function(function, lambda_client):
                 print(f"✅ Successfully deleted Lambda function and resources: {function}")
                 log_action("Lambda", function, True, mode="deletion")

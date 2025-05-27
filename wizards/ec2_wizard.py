@@ -80,7 +80,7 @@ def terminate_selected_instances():
         return
 
     for instance in selected_instances:
-        if config.delete_for_real:
+        if delete_for_real:
             try:
                 ec2_client.terminate_instances(InstanceIds=[instance])
                 print(f"✅ Successfully terminated: {instance}")

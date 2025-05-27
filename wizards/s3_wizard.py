@@ -114,7 +114,7 @@ def delete_selected_buckets():
         return
 
     for bucket in selected_buckets:
-        if config.delete_for_real:
+        if delete_for_real:
             if empty_bucket(bucket):
                 try:
                     s3_client.delete_bucket(Bucket=bucket)

@@ -53,7 +53,7 @@ def set_status():
     global delete_for_real
     while True:
         print()
-        status = input("Choose a mode: press 'r' for real deletion of buckets, or 't' for testing only: ").strip().lower()
+        status = input("Choose a mode: press 'r' for real deletion of instances, or 't' for testing only: ").strip().lower()
         if status in ("r", "t"):
             if status == "r":
                 delete_for_real = True
