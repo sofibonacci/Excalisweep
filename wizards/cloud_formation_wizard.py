@@ -114,15 +114,27 @@ def _background_stack_deletion(selected_stacks):
 
     print("\nAll deletions have finished.\n")
 
+    # sumarry of operations
+    print("\n" + "="*50)
+    print("🔔 OPERATION SUMMARY".center(50))
+    print("="*50)
+
     if successfully_deleted:
-        print("Successfully deleted stacks:")
+        print("\n✅ Successfully deleted stacks:")
         for stack in successfully_deleted:
-            print(f" - {stack}")
+            print(f"   - {stack}")
+    else:
+        print("\n⚠️  No stacks were successfully deleted.")
 
     if failed_to_delete:
-        print("\nStacks that failed to delete:")
+        print("\n❌ Stacks that failed to delete:")
         for stack, error in failed_to_delete:
-            print(f" - {stack}: {error}")
+            print(f"   - {stack}: {error}")
+    else:
+        print("\n✅ No deletion errors occurred.")
+
+    print("="*50 + "\n")
+
 
 
 def delete_selected_stacks():
