@@ -3,11 +3,18 @@ import datetime
 from utility import *
 import sys
 import os
+import threading
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from logger import log_action
 import config
+
 # Get delete_for_real from environment variable
 delete_for_real = os.getenv('DELETE_FOR_REAL', 'False') == 'True'
+
+successfully_deleted = []
+failed_to_delete = []
+lock = threading.Lock()
 
 def list_cloudformation_stacks(): #retrieve and display all cloudformation stacks
     StackStatusFilter=[
@@ -76,58 +83,68 @@ def list_cloudformation_stacks(): #retrieve and display all cloudformation stack
         
 
 
-def delete_selected_stacks(): #delete selected cloudformation stacks
-    print("Retrieving CloudFormation stacks......")
+def delete_stack_async(stack_name):
+    cloudformation_client = boto3.client('cloudformation')
+    try:
+        if delete_for_real:
+            cloudformation_client.delete_stack(StackName=stack_name)
+            waiter = cloudformation_client.get_waiter('stack_delete_complete')
+            waiter.wait(StackName=stack_name)
+            with lock:
+                successfully_deleted.append(stack_name)
+            log_action("Cloud Formation", stack_name, True, mode="deletion")
+        else:
+            with lock:
+                successfully_deleted.append(stack_name)
+            log_action("Cloud Formation", stack_name, True, mode="deletion")
+    except Exception as e:
+        with lock:
+            failed_to_delete.append((stack_name, str(e)))
+        log_action("Cloud Formation", stack_name, False, mode="deletion")
+
+def delete_selected_stacks():
+    print("Retrieving CloudFormation stacks...")
     stacks = list_cloudformation_stacks()  
-    
+
     if not stacks:
         return
-        
-    selected_stacks = select_from_list(list(stacks.keys()),
-                                       "Enter the numbers of the stacks you want to delete (comma-separated), type 'all' to delete all or 'exit' to cancel: ",)
+
+    selected_stacks = select_from_list(
+        list(stacks.keys()),
+        "Enter the numbers of the stacks you want to delete (comma-separated), type 'all' to delete all or 'exit' to cancel: ",
+    )
 
     if not selected_stacks:
-        print("\n🚫 No valid stacks were selected for deletion.")
+        print("No valid stacks were selected for deletion.")
         return
 
-    confirm = input(f"\n⚠️ Are you sure you want to delete these {len(selected_stacks)} stack(s)? (yes/no): ").strip().lower()
-    
+    confirm = input(f"Are you sure you want to delete these {len(selected_stacks)} stack(s)? (yes/no): ").strip().lower()
     if confirm != "yes":
-        print("🚫 Deletion canceled.")
+        print("Deletion canceled.")
         return
-    
-    try:
-        cloudformation_client = boto3.client('cloudformation')
-        for stack in selected_stacks:
-            
-            try:
-                if delete_for_real:
-                    cloudformation_client.delete_stack(StackName=stack)
-                    print(f"⏳ Deletion initiated for: {stack}, waiting for confirmation...")
-                    waiter = cloudformation_client.get_waiter('stack_delete_complete')
-                    try:
-                        waiter.wait(StackName=stack)
-                        print(f"✅ Successfully deleted: {stack}")
-                        log_action("Cloud Formation",stack, True, mode="deletion")
-                    except botocore.exceptions.WaiterError as e:
-                        print(f"⚠️ Failed to delete {stack}. It may have dependencies.")
-                        log_action("Cloud Formation",stack, False, mode="deletion")
-                else:
-                    log_action("Cloud Formation", stack, True, mode="deletion")
-                    print(f" Logged delete attempt for: {stack}")
-            
-            except (botocore.exceptions.EndpointConnectionError, 
-                    botocore.exceptions.BotoCoreError, 
-                    boto3.exceptions.Boto3Error, 
-                    Exception) as e:
-                print(f"❌ Error while deleting {stack}: {e}")
-                log_action("Cloud Formation", stack, False, mode="deletion")
-    
-    except botocore.exceptions.BotoCoreError as e:
-        print(f"❌ General AWS BotoCore error: {e}")
-    except Exception as e:
-        print(f"❌ Unexpected error: {e}")
-            
+
+    print("Starting deletion threads...")
+
+    threads = []
+    for stack in selected_stacks:
+        t = threading.Thread(target=delete_stack_async, args=(stack,))
+        t.start()
+        threads.append(t)
+
+    for t in threads:
+        t.join()
+
+    print("\nAll deletions have finished.\n")
+
+    if successfully_deleted:
+        print("Successfully deleted stacks:")
+        for stack in successfully_deleted:
+            print(f" - {stack}")
+
+    if failed_to_delete:
+        print("\nStacks that failed to delete:")
+        for stack, error in failed_to_delete:
+            print(f" - {stack}: {error}")
 
 
 if __name__ == "__main__":
