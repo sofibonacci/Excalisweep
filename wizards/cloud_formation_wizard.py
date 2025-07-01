@@ -1,9 +1,9 @@
 import boto3, botocore
-import datetime
 from utility import *
 import sys
 import os
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from logger import log_action
@@ -11,6 +11,7 @@ import config
 
 # Get delete_for_real from environment variable
 delete_for_real = os.getenv('DELETE_FOR_REAL', 'False') == 'True'
+MAX_WORKERS = 5  # limit of stacks deleted at the same time
 
 successfully_deleted = []
 failed_to_delete = []
@@ -83,7 +84,7 @@ def list_cloudformation_stacks(): #retrieve and display all cloudformation stack
         
 
 
-def delete_stack_async(stack_name):
+def delete_stack_worker(stack_name):
     cloudformation_client = boto3.client('cloudformation')
     try:
         if delete_for_real:
@@ -101,6 +102,28 @@ def delete_stack_async(stack_name):
         with lock:
             failed_to_delete.append((stack_name, str(e)))
         log_action("Cloud Formation", stack_name, False, mode="deletion")
+
+
+def _background_stack_deletion(selected_stacks):
+    print(f"Starting deletion in background with up to {MAX_WORKERS} concurrent stacks...")
+
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = {executor.submit(delete_stack_worker, stack): stack for stack in selected_stacks}
+        for future in as_completed(futures):
+            pass  
+
+    print("\nAll deletions have finished.\n")
+
+    if successfully_deleted:
+        print("Successfully deleted stacks:")
+        for stack in successfully_deleted:
+            print(f" - {stack}")
+
+    if failed_to_delete:
+        print("\nStacks that failed to delete:")
+        for stack, error in failed_to_delete:
+            print(f" - {stack}: {error}")
+
 
 def delete_selected_stacks():
     print("Retrieving CloudFormation stacks...")
@@ -123,28 +146,11 @@ def delete_selected_stacks():
         print("Deletion canceled.")
         return
 
-    print("Starting deletion threads...")
+    thread = threading.Thread(target=_background_stack_deletion, args=(selected_stacks,))
+    thread.daemon = True
+    thread.start()
 
-    threads = []
-    for stack in selected_stacks:
-        t = threading.Thread(target=delete_stack_async, args=(stack,))
-        t.start()
-        threads.append(t)
-
-    for t in threads:
-        t.join()
-
-    print("\nAll deletions have finished.\n")
-
-    if successfully_deleted:
-        print("Successfully deleted stacks:")
-        for stack in successfully_deleted:
-            print(f" - {stack}")
-
-    if failed_to_delete:
-        print("\nStacks that failed to delete:")
-        for stack, error in failed_to_delete:
-            print(f" - {stack}: {error}")
+    print("Deletion has been initiated in the background. You can continue working.")
 
 
 if __name__ == "__main__":
