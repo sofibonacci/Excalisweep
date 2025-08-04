@@ -85,19 +85,30 @@ def delete_stack_worker(stack_name, success_list, fail_list):
                 try:
                     response = cloudformation_client.describe_stacks(StackName=stack_name)
                     status = response['Stacks'][0]['StackStatus']
+
                     if status == 'DELETE_COMPLETE':
                         with lock:
                             success_list.append(stack_name)
                         log_action("Cloud Formation", stack_name, True, mode="deletion")
+
+                    elif status == 'DELETE_FAILED':
+                        with lock:
+                            fail_list.append((stack_name, "Stack deletion failed (status: DELETE_FAILED)"))
+                        log_action("Cloud Formation", stack_name, False, mode="deletion")
+
                     else:
-                        raise Exception(f"Stack still exists with status: {status}")
+                        raise Exception(f"Stack still exists with unexpected status: {status}")
+
                 except botocore.exceptions.ClientError as e:
                     if "does not exist" in str(e):
                         with lock:
                             success_list.append(stack_name)
                         log_action("Cloud Formation", stack_name, True, mode="deletion")
                     else:
-                        raise
+                        with lock:
+                            fail_list.append((stack_name, f"ClientError: {str(e)}"))
+                        log_action("Cloud Formation", stack_name, False, mode="deletion")
+
 
             except botocore.exceptions.WaiterError as e:
                 with lock:
