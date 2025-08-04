@@ -1,21 +1,20 @@
 import boto3, botocore
-from utility import *
 import sys
 import os
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from utility import *
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from logger import log_action
 import config
 
-# Get delete_for_real from environment variable
 delete_for_real = os.getenv('DELETE_FOR_REAL', 'False') == 'True'
-MAX_WORKERS = 5  # limit of stacks deleted at the same time
-lock = threading.Lock()  # Lock for thread-safe list access
+MAX_WORKERS = 5
+lock = threading.Lock()
 
 def list_cloudformation_stacks():
-    """Retrieve and display all cloudformation stacks."""
+    """Retrieve and display all CloudFormation stacks."""
     StackStatusFilter = [
         'CREATE_IN_PROGRESS', 'CREATE_FAILED', 'CREATE_COMPLETE',
         'ROLLBACK_IN_PROGRESS', 'ROLLBACK_FAILED', 'ROLLBACK_COMPLETE',
@@ -55,8 +54,7 @@ def list_cloudformation_stacks():
             try:
                 stack_details = client.describe_stacks(StackName=stack_name)['Stacks'][0]
                 stacks[stack_name]['Description'] = stack_details.get('Description', 'No description provided')
-            except botocore.exceptions.ClientError as e:
-                print(f"⚠️ Failed to get the description of {stack_name}: {e}")
+            except botocore.exceptions.ClientError:
                 stacks[stack_name]['Description'] = 'Error retrieving description'
 
         print_list_enumerate(stacks, "CloudFormation Stacks")
@@ -81,24 +79,30 @@ def delete_stack_worker(stack_name, success_list, fail_list):
         if delete_for_real:
             cloudformation_client.delete_stack(StackName=stack_name)
             waiter = cloudformation_client.get_waiter('stack_delete_complete')
-            waiter.wait(StackName=stack_name)
-
             try:
-                response = cloudformation_client.describe_stacks(StackName=stack_name)
-                status = response['Stacks'][0]['StackStatus']
-                if status == 'DELETE_COMPLETE':
-                    with lock:
-                        success_list.append(stack_name)
-                    log_action("Cloud Formation", stack_name, True, mode="deletion")
-                else:
-                    raise Exception(f"Stack status after deletion: {status}")
-            except botocore.exceptions.ClientError as e:
-                if "does not exist" in str(e):
-                    with lock:
-                        success_list.append(stack_name)
-                    log_action("Cloud Formation", stack_name, True, mode="deletion")
-                else:
-                    raise
+                waiter.wait(StackName=stack_name)
+
+                try:
+                    response = cloudformation_client.describe_stacks(StackName=stack_name)
+                    status = response['Stacks'][0]['StackStatus']
+                    if status == 'DELETE_COMPLETE':
+                        with lock:
+                            success_list.append(stack_name)
+                        log_action("Cloud Formation", stack_name, True, mode="deletion")
+                    else:
+                        raise Exception(f"Stack still exists with status: {status}")
+                except botocore.exceptions.ClientError as e:
+                    if "does not exist" in str(e):
+                        with lock:
+                            success_list.append(stack_name)
+                        log_action("Cloud Formation", stack_name, True, mode="deletion")
+                    else:
+                        raise
+
+            except botocore.exceptions.WaiterError as e:
+                with lock:
+                    fail_list.append((stack_name, f"Waiter failed: {str(e)}"))
+                log_action("Cloud Formation", stack_name, False, mode="deletion")
 
         else:
             with lock:
@@ -110,11 +114,7 @@ def delete_stack_worker(stack_name, success_list, fail_list):
             fail_list.append((stack_name, str(e)))
         log_action("Cloud Formation", stack_name, False, mode="deletion")
 
-
-
 def _background_stack_deletion(selected_stacks, success_list, fail_list):
-    print(f"Starting deletion in background with up to {MAX_WORKERS} concurrent stacks...")
-
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {
             executor.submit(delete_stack_worker, stack, success_list, fail_list): stack
@@ -122,9 +122,7 @@ def _background_stack_deletion(selected_stacks, success_list, fail_list):
         }
         for future in as_completed(futures):
             pass
-
     print("\nAll deletions have finished. Summary will appear in the main menu.\n")
-    return
 
 def delete_selected_stacks():
     print("Retrieving CloudFormation stacks...")
