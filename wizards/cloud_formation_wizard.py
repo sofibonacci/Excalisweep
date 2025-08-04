@@ -82,17 +82,27 @@ def delete_stack_worker(stack_name, success_list, fail_list):
             cloudformation_client.delete_stack(StackName=stack_name)
             waiter = cloudformation_client.get_waiter('stack_delete_complete')
             waiter.wait(StackName=stack_name)
-            with lock:
-                success_list.append(stack_name)
-            log_action("Cloud Formation", stack_name, True, mode="deletion")
+
+            # verify status
+            response = cloudformation_client.describe_stacks(StackName=stack_name)
+            stack_status = response['Stacks'][0]['StackStatus'] if response['Stacks'] else None
+
+            if stack_status == 'DELETE_COMPLETE':
+                with lock:
+                    success_list.append(stack_name)
+                log_action("Cloud Formation", stack_name, True, mode="deletion")
+            else:
+                raise Exception(f"Stack deletion ended with status: {stack_status}")
         else:
             with lock:
                 success_list.append(stack_name)
             log_action("Cloud Formation", stack_name, True, mode="deletion")
+
     except Exception as e:
         with lock:
             fail_list.append((stack_name, str(e)))
         log_action("Cloud Formation", stack_name, False, mode="deletion")
+
 
 def _background_stack_deletion(selected_stacks, success_list, fail_list):
     print(f"Starting deletion in background with up to {MAX_WORKERS} concurrent stacks...")
