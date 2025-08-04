@@ -8,6 +8,7 @@ import time
 
 # Initialize delete_for_real in the global scope
 delete_for_real = True  # Default to testing mode
+background_tasks = []   # [(thread, success_list, fail_list)]
 
 def show_intro():
     print("""
@@ -100,18 +101,54 @@ def show_billed_services():
             print(f" {service}: ${cost:.2f}")
 
 def invoke_script(script_name):
-    """Execute a cleanup wizard script safely."""
     print(f"\nRunning {script_name}...")
     script_path = f'wizards.{script_name}'
     try:
-        # Pass delete_for_real to the wizard module if needed
-        subprocess.run(['python', '-m', script_path], check=True, env={**os.environ, 'DELETE_FOR_REAL': str(delete_for_real)})
+        if script_name == 'cloud_formation_wizard':
+            import importlib
+            wizard = importlib.import_module(script_path)
+            thread, success_list, fail_list = wizard.delete_selected_stacks()
+            if thread:
+                background_tasks.append((thread, success_list, fail_list))
+        else:
+            subprocess.run(['python', '-m', script_path], check=True, env={**os.environ, 'DELETE_FOR_REAL': str(delete_for_real)})
+
     except FileNotFoundError as e:
         print(f"Error: Script {script_name} not found: {e}")
     except subprocess.CalledProcessError:
         print(f"Error: {script_name} encountered an issue.")
     except Exception as e:
         print(f"Unexpected error running {script_name}: {e}")
+
+def check_background_tasks():
+    global background_tasks
+    completed = []
+    for thread, success, fail in background_tasks:
+        if not thread.is_alive():
+            print("\n" + "="*50)
+            print("🔔 CLOUD FORMATION DELETION SUMMARY".center(50))
+            print("="*50)
+
+            if success:
+                print("\n✅ Successfully deleted stacks:")
+                for stack in success:
+                    print(f"   - {stack}")
+            else:
+                print("\n⚠️  No stacks were successfully deleted.")
+
+            if fail:
+                print("\n❌ Stacks that failed to delete:")
+                for stack, error in fail:
+                    print(f"   - {stack}: {error}")
+            else:
+                print("\n✅ No deletion errors occurred.")
+
+            print("="*50 + "\n")
+            completed.append((thread, success, fail))
+
+    for task in completed:
+        background_tasks.remove(task)
+
 
 def show_logs():
     """Display logs if available."""
@@ -127,7 +164,6 @@ def show_logs():
         print("\nNo log file found.")
 
 def main_menu():
-    """Display the main menu and handle user selection."""
     options = {
         '1': show_billed_services,
         '2': lambda: invoke_script('s3_wizard'),
@@ -139,8 +175,10 @@ def main_menu():
         '8': set_status,
         '9': lambda: print("Exiting ExcaliSweep. Goodbye!")
     }
-    
-    while True:        
+
+    while True:
+        check_background_tasks()  # Show summaries if any background deletions ended
+
         print("Currently, deletion mode is set to", delete_for_real)
         print("If you'd like to change it, go to option Change Mode")
         print("\nOptions:")
@@ -154,16 +192,21 @@ def main_menu():
         print("  8. Change mode")
         print("  9. Exit")
         choice = input("Select an option: ").strip()
-        
+
         action = options.get(choice)
         if action:
             if choice == '9':
+                print("Waiting for background tasks to finish (if any)...")
+                for thread, _, _ in background_tasks:
+                    thread.join()
+                check_background_tasks()
                 action()
                 break
             else:
                 action()
         else:
             print("Invalid option. Please try again.")
+
 
 if __name__ == "__main__":
     show_intro()
